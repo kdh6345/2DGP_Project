@@ -1,32 +1,32 @@
+# girl.py
 from pico2d import *
-import game_framework
-import game_world
 
 class Girl:
     image = None
 
-    def __init__(self, x=400, y=90, velocity=5):
+    def __init__(self, x=200, y=100, velocity=5):
         if Girl.image is None:
-            Girl.image = load_image('character_walk.png')  # 여자 캐릭터 이미지 로드
+            Girl.image = load_image('character_walk.png')  # 스프라이트 시트 이미지 로드
         self.x, self.y = x, y
         self.velocity = velocity
         self.dir = 1  # 오른쪽이 1, 왼쪽이 -1
+        self.frame = 0
+        self.width = 130  # 소녀의 그릴 너비
+        self.height = 150  # 소녀의 그릴 높이
 
     def draw(self):
+        frame_width = 717  # 스프라이트 한 프레임의 너비
+        frame_height = 800  # 스프라이트 한 프레임의 높이
         if self.dir == 1:
-            self.image.draw(self.x, self.y)
+            self.image.clip_draw(
+                int(self.frame) * frame_width, 0, frame_width, frame_height,
+                self.x, self.y, self.width, self.height
+            )
         else:
-            self.image.composite_draw(0, 'h', self.x, self.y)  # 왼쪽을 향할 때 뒤집기
+            self.image.clip_composite_draw(
+                int(self.frame) * frame_width, 0, frame_width, frame_height,
+                0, 'h', self.x, self.y, self.width, self.height
+            )
 
     def update(self):
-        self.x += self.velocity * self.dir * game_framework.frame_time
-        if self.x < 0 or self.x > 800:  # 화면 경계에서 방향 전환
-            self.dir *= -1
-
-    def get_bb(self):
-        # 충돌 박스 설정 (사각형으로 간단히)
-        return self.x - 25, self.y - 25, self.x + 25, self.y + 25
-
-    def handle_collision(self, other, group):
-        # 충돌 처리 로직
-        pass
+       pass
