@@ -15,8 +15,8 @@ class Hall:
 class Image1:
     def __init__(self):
         self.image = load_image('start room1.png')
-        self.width = int(1151*1.5)
-        self.height = int(600*1.5)
+        self.width = int(1151)
+        self.height = int(600)
 
     def draw(self, camera_x,camera_y):
         # Hall 이미지 오른쪽에 추가 이미지가 오도록 위치 조정
@@ -26,7 +26,7 @@ class Image2:
     def __init__(self):
         self.image = load_image('secondroom.png')
         self.width = int(2000)
-        self.height = int(626)
+        self.height = int(600)
 
     def draw(self, camera_x,camera_y):
         # Hall 이미지 오른쪽에 추가 이미지가 오도록 위치 조정
@@ -35,8 +35,8 @@ class Image2:
 class Image3:
     def __init__(self):
         self.image = load_image('start room1.png')
-        self.width = int(1151*1.2)
-        self.height = int(600*1.2)
+        self.width = int(1151)
+        self.height = int(600)
 
     def draw(self, camera_x,camera_y):
         # Hall 이미지 오른쪽에 추가 이미지가 오도록 위치 조정
