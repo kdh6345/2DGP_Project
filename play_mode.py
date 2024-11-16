@@ -1,12 +1,9 @@
-#play_mode.py
 from pico2d import *
 import game_framework
 
 import game_world
-from background import Background
+from background import Background, Fence
 from girl import Girl
-
-# boy = None
 
 def handle_events():
     events = get_events()
@@ -21,18 +18,22 @@ def handle_events():
 def init():
     global back
     global girl
+    global fence
 
-    back=Background()
-    game_world.add_object(back, 0)
+    # Background 객체 추가
+    back = Background()
+    game_world.add_object(back, 0)  # 배경을 가장 아래 레이어에 추가
 
-    girl=Girl()
-    game_world.add_object(girl, 1)
+    # Girl 객체 추가
+    girl = Girl()
+    game_world.add_object(girl, 1)  # 소녀를 두 번째 레이어에 추가
 
+    # Fence 객체 추가
+    fence = Fence()
+    game_world.add_object(fence, 3)  # Fence를 가장 위 레이어에 추가
 
 def finish():
     game_world.clear()
-    pass
-
 
 def update():
     game_world.update()
@@ -47,4 +48,3 @@ def pause():
 
 def resume():
     pass
-
