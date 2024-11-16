@@ -10,14 +10,14 @@ def change_mode(mode):
         stack[-1].finish()
         stack.pop()
     stack.append(mode)
-    mode.init()
+    mode.enter()
 
 def push_mode(mode):
     global stack
     if len(stack) > 0:
         stack[-1].pause()
     stack.append(mode)
-    mode.init()
+    mode.enter()
 
 def pop_mode():
     global stack
@@ -35,7 +35,7 @@ def run(start_mode):
     global running, stack, frame_time
     running = True
     stack = [start_mode]
-    start_mode.init()
+    start_mode.enter()
 
     current_time = time.time()  # 현재 시간을 기록
 
