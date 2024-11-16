@@ -56,9 +56,13 @@ class Walk:
     def draw(girl):
         frame_width = 717  # 각 프레임의 너비
         frame_height = 800  # 이미지 높이
-        
-        girl.image.clip_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
-                             girl.x, girl.y, girl.width, girl.height)  # 화면에 100x150 크기로 출력
+        if girl.face_dir==1:
+            girl.image.clip_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
+                                 girl.x, girl.y, girl.width, girl.height)
+        else:
+            girl.image.clip_composite_draw(int(girl.frame)*frame_width,0,frame_width,frame_height,
+                                           0,'h',girl.x,girl.y,girl.width,girl.height)
+
 
 
 from pico2d import *
