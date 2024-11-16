@@ -3,42 +3,29 @@ import game_framework
 import game_world
 from girl import Girl
 from background import Background
-
-class TransitionBox:
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-
-    def draw(self):
-        # 히트박스를 시각화
-        draw_rectangle(*self.get_bb())
-
-    def get_bb(self):
-        # 히트박스 범위 계산
-        left = self.x - self.width // 2
-        bottom = self.y - self.height // 2
-        right = self.x + self.width // 2
-        top = self.y + self.height // 2
-        return left, bottom, right, top
-
+from transition_box import TransitionBox
 
 def enter():
     global girl, background, transition_box
+
+    # 기존 객체 제거
+    game_world.clear()
+
+    # 새로운 객체 생성
+    background = Background('start room1.png', 800, 400)  # 옥상 배경 이미지
     girl = Girl()  # 소녀 객체 생성
-    background = Background('start room1.png',800,400)  # 옥상 배경 이미지
+    transition_box = TransitionBox(1050, -50, 100, 50)  # 전환 박스 생성
 
-    # 전환 박스 생성
-    transition_box = TransitionBox(1050, 100, 100, 100)
+    # 소녀의 초기 위치 (전환 박스 밖)
+    girl.x, girl.y = 200, 200
 
+    # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
 
 def exit():
     global background
     del background
-    game_world.clear()
 
 def update():
     global girl
@@ -68,15 +55,20 @@ def handle_events():
             girl.handle_event(event)
 
 def check_for_transition(girl):
-    # 특정 좌표 (400, 0)의 범위를 설정
-    target_x = 1050
-    target_y = 100
-    threshold = 50
+    # TransitionBox와 소녀의 히트박스 비교
+    girl_left = girl.x - girl.width // 2
+    girl_bottom = girl.y - girl.height // 2
+    girl_right = girl.x + girl.width // 2
+    girl_top = girl.y + girl.height // 2
 
-    if abs(girl.x - target_x) <= threshold and abs(girl.y - target_y) <= threshold:
-        return True
-    return False
+    box_left, box_bottom, box_right, box_top = transition_box.get_bb()
+
+    # 충돌 여부 확인
+    if girl_left > box_right or girl_right < box_left:
+        return False
+    if girl_bottom > box_top or girl_top < box_bottom:
+        return False
+    return True
 
 def finish():
-    # 모드 종료 시 호출될 메서드
     pass

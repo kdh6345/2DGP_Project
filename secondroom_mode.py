@@ -3,39 +3,23 @@ import game_framework
 import game_world
 from girl import Girl
 from background import Background
-class TransitionBox:
-    def __init__(self, x, y, width, height):
-        self.x = x
-        self.y = y
-        self.width = width
-        self.height = height
-
-    def draw(self):
-        draw_rectangle(*self.get_bb())
-
-    def get_bb(self):
-        # 히트박스 범위 계산
-        left = self.x - self.width // 2
-        bottom = self.y - self.height // 2
-        right = self.x + self.width // 2
-        top = self.y + self.height // 2
-        return left, bottom, right, top
+from transition_box import TransitionBox
 
 def enter():
-    global background, girl,transition_box
+    global background, girl, transition_box
 
-    # 새로운 배경 설정
-    background = Background('secondroom.png', x=800, y=400)  # 두 번째 방 배경 이미지 및 위치
+    # 기존 객체 제거
+    game_world.clear()
 
-    # 소녀 객체 가져오기
-    girl = [obj for obj in game_world.objects_at(1) if isinstance(obj, Girl)][0]
+    # 새로운 객체 생성
+    background = Background('secondroom.png', 800, 400)  # 두 번째 방 배경 이미지
+    girl = Girl()  # 소녀 객체 생성
+    transition_box = TransitionBox(850, 1000, 50, 50)  # 전환 박스 생성
 
-    # 소녀 위치 초기화 (이미 Idle 상태라면 추가 상태 초기화는 필요 없음)
-    girl.x, girl.y = 1000, 800
+    # 소녀의 초기 위치 (전환 박스 밖)
+    girl.x, girl.y = 900, 700
 
-    transition_box = TransitionBox(1000, 800, 100, 100)
-
-    # game_world에 추가
+    # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
 
@@ -46,6 +30,7 @@ def exit():
 def update():
     # 소녀 및 게임 월드 업데이트
     game_world.update()
+
     # 소녀의 위치 확인 및 화면 전환
     if check_for_transition(girl):
         import rooftop_mode
@@ -59,7 +44,6 @@ def draw():
     update_canvas()
 
 def handle_events():
-    # 이벤트 처리
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -67,8 +51,7 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            girl = [obj for obj in game_world.objects_at(1) if isinstance(obj, Girl)][0]
-            girl.handle_event(event)  # 소녀 이벤트 처리
+            girl.handle_event(event)
 
 def check_for_transition(girl):
     # TransitionBox와 소녀의 히트박스 비교
@@ -85,7 +68,5 @@ def check_for_transition(girl):
     if girl_bottom > box_top or girl_top < box_bottom:
         return False
     return True
-
 def finish():
     pass
-
