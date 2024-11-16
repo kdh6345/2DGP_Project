@@ -1,54 +1,55 @@
-#game_framework.py
 import time
+
+running = True
+stack = []
+frame_time = 0.0  # 프레임 간 경과 시간
 
 def change_mode(mode):
     global stack
-    if (len(stack) > 0):
-        # execute the current mode's finish function
+    if len(stack) > 0:
         stack[-1].finish()
-        # remove the current mode
         stack.pop()
     stack.append(mode)
     mode.init()
 
-
 def push_mode(mode):
     global stack
-    if (len(stack) > 0):
+    if len(stack) > 0:
         stack[-1].pause()
     stack.append(mode)
     mode.init()
 
 def pop_mode():
     global stack
-    if (len(stack) > 0):
-        # execute the current mode's finish function
+    if len(stack) > 0:
         stack[-1].finish()
-        # remove the current mode
         stack.pop()
-
-    # execute resume function of the previous mode
-    if (len(stack) > 0):
+    if len(stack) > 0:
         stack[-1].resume()
-
 
 def quit():
     global running
     running = False
 
-
 def run(start_mode):
-    global running, stack
+    global running, stack, frame_time
     running = True
     stack = [start_mode]
     start_mode.init()
 
+    current_time = time.time()  # 현재 시간을 기록
+
     while running:
+        # frame_time 계산
+        new_time = time.time()
+        frame_time = new_time - current_time
+        current_time = new_time
+
+        # 현재 모드 실행
         stack[-1].handle_events()
         stack[-1].update()
         stack[-1].draw()
 
-    # repeatedly delete the top of the stack
-    while (len(stack) > 0):
+    while len(stack) > 0:
         stack[-1].finish()
         stack.pop()

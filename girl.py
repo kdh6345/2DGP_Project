@@ -25,7 +25,14 @@ class Idle:
        pass
     @staticmethod
     def do(girl):
-        girl.frame = (girl.frame + 1) % 3
+        frame_speed = 0.1  # Walk 상태에서 프레임 변경 주기 (초)
+        girl.frame_time_accumulator += game_framework.frame_time
+
+        if girl.frame_time_accumulator >= frame_speed:
+            girl.frame = (girl.frame + 1) % 3  # 6개의 프레임 반복
+            girl.frame_time_accumulator = 0  # 누적 시간 초기화
+
+
 
     @staticmethod
     def draw(girl):
@@ -42,6 +49,8 @@ class Walk:
         elif left_down(e) or right_up(e):  # 왼쪽으로 RUN
             girl.dir, girl.face_dir, girl.action = -1, -1, 0
 
+        girl.frame_time_accumulator = 0  # Walk 상태에서 프레임 시간 초기화
+
     @staticmethod
     def exit(girl, e):
         pass
@@ -49,8 +58,15 @@ class Walk:
 
     @staticmethod
     def do(girl):
-        girl.frame = (girl.frame + 1) % 6
-        girl.x += girl.dir*0.1
+        # Walk 상태에서 프레임 변경 속도
+        frame_speed = 0.1  # Walk 상태에서 프레임 변경 주기 (초)
+        girl.frame_time_accumulator += game_framework.frame_time
+
+        if girl.frame_time_accumulator >= frame_speed:
+            girl.frame = (girl.frame + 1) % 6  # 6개의 프레임 반복
+            girl.frame_time_accumulator = 0  # 누적 시간 초기화
+
+        girl.x += girl.dir * 0.3  # 이동 속도 설정
 
     @staticmethod
     def draw(girl):
@@ -75,6 +91,7 @@ class Girl:
         self.action = 3  # 초기 상태
         self.frame = 0
         self.wait_time = 0
+        self.frame_time_accumulator = 0  # 프레임 변경 시간 누적 변수
         self.image = load_image('character_walk.png')  # 걷는 상태 이미지
         self.idle_image = load_image('character_idle.png')  # Idle 상태 이미지
         self.width = 150
