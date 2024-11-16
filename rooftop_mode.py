@@ -5,7 +5,7 @@ from girl import Girl
 from background import Background
 from transition_box import TransitionBox
 #게임 시작 시 소녀의 위치또는 사망후 재시작
-girl_initial_position = (200, 200)
+girl_initial_position = (400, 200)
 def enter():
     global girl, background, transition_box, girl_initial_position,black_screen
 
