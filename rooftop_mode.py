@@ -4,9 +4,10 @@ import game_world
 from girl import Girl
 from background import Background
 from transition_box import TransitionBox
-
+#게임 시작 시 소녀의 위치또는 사망후 재시작
+girl_initial_position = (200, 200)
 def enter():
-    global girl, background, transition_box
+    global girl, background, transition_box, girl_initial_position,black_screen
 
     # 기존 객체 제거
     game_world.clear()
@@ -15,9 +16,10 @@ def enter():
     background = Background('start room1.png', 800, 400)  # 옥상 배경 이미지
     girl = Girl()  # 소녀 객체 생성
     transition_box = TransitionBox(1050, -50, 100, 50)  # 전환 박스 생성
+    black_screen = load_image('black.png')
 
-    # 소녀의 초기 위치 (전환 박스 밖)
-    girl.x, girl.y = 200, 200
+    # 소녀의 초기 위치 설정
+    girl.x, girl.y = girl_initial_position
 
     # game_world에 객체 추가
     game_world.add_object(background, 0)
@@ -28,18 +30,20 @@ def exit():
     del background
 
 def update():
-    global girl
+    global girl, girl_initial_position
 
     # 소녀의 상태 업데이트
     game_world.update()
 
     # 소녀의 위치 확인 및 화면 전환
     if check_for_transition(girl):
+        girl_initial_position = (1050, 100)
         import secondroom_mode
         game_framework.change_mode(secondroom_mode)
 
 def draw():
     clear_canvas()
+    black_screen.draw(800, 400, 1600, 800)
     game_world.render()
     transition_box.draw()
     update_canvas()

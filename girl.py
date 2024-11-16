@@ -94,8 +94,8 @@ class Girl:
         self.frame_time_accumulator = 0
         self.image = load_image('character_walk.png')  # 걷는 상태 이미지
         self.idle_image = load_image('character_idle.png')  # Idle 상태 이미지
-        self.width = 150
-        self.height = 150
+        self.width = 100
+        self.height = 100
         self.state_machine = StateMachine(self)
 
         # 상태 머신 초기화

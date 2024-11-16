@@ -6,7 +6,7 @@ from background import Background
 from transition_box import TransitionBox
 
 def enter():
-    global background, girl, transition_box
+    global background, girl, transition_box,black_screen
 
     # 기존 객체 제거
     game_world.clear()
@@ -15,6 +15,7 @@ def enter():
     background = Background('secondroom.png', 800, 400)  # 두 번째 방 배경 이미지
     girl = Girl()  # 소녀 객체 생성
     transition_box = TransitionBox(850, 1000, 50, 50)  # 전환 박스 생성
+    black_screen = load_image('black.png')
 
     # 소녀의 초기 위치 (전환 박스 밖)
     girl.x, girl.y = 900, 700
@@ -39,6 +40,7 @@ def update():
 def draw():
     # 화면 그리기
     clear_canvas()
+    black_screen.draw(800, 400, 1600, 800)
     game_world.render()
     transition_box.draw()
     update_canvas()
