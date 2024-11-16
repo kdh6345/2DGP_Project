@@ -1,27 +1,50 @@
-# play_mode.py
+#play_mode.py
 from pico2d import *
+import game_framework
+
+import game_world
 from background import Background
 from girl import Girl
 
-background = None
-girl = None
+# boy = None
+
+def handle_events():
+    events = get_events()
+    for event in events:
+        if event.type == SDL_QUIT:
+            game_framework.quit()
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
+            game_framework.quit()
+        else:
+            girl.handle_event(event)
 
 def init():
-    global background, girl
-    background = Background('start room1.png')  # 배경 이미지 경로
-    girl = Girl()  # 소녀 캐릭터 생성
+    global back
+    global girl
+
+    back=Background()
+    game_world.add_object(back, 0)
+
+    girl=Girl()
+    game_world.add_object(girl, 1)
+
+
+def finish():
+    game_world.clear()
+    pass
+
 
 def update():
-    girl.update()
-    pass
+    game_world.update()
 
 def draw():
     clear_canvas()
-    background.draw(575.5, 300)  # 캔버스 중앙에 배경 그리기
-    girl.draw()  # 소녀 캐릭터 그리기
+    game_world.render()
     update_canvas()
 
-def handle_events():
-    events=get_events()
-    for event in events:
-        girl.handle_event(event)
+def pause():
+    pass
+
+def resume():
+    pass
+

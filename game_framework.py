@@ -1,25 +1,54 @@
-# game_framework.py
-from pico2d import *
+#game_framework.py
+import time
 
-running = True
-current_state = None
+def change_mode(mode):
+    global stack
+    if (len(stack) > 0):
+        # execute the current mode's finish function
+        stack[-1].finish()
+        # remove the current mode
+        stack.pop()
+    stack.append(mode)
+    mode.init()
 
-def run(start_state):
-    global current_state, running
-    current_state = start_state
-    current_state.init()
+
+def push_mode(mode):
+    global stack
+    if (len(stack) > 0):
+        stack[-1].pause()
+    stack.append(mode)
+    mode.init()
+
+def pop_mode():
+    global stack
+    if (len(stack) > 0):
+        # execute the current mode's finish function
+        stack[-1].finish()
+        # remove the current mode
+        stack.pop()
+
+    # execute resume function of the previous mode
+    if (len(stack) > 0):
+        stack[-1].resume()
+
+
+def quit():
+    global running
+    running = False
+
+
+def run(start_mode):
+    global running, stack
+    running = True
+    stack = [start_mode]
+    start_mode.init()
 
     while running:
-        handle_events()
-        current_state.update()
-        current_state.draw()
-        delay(0.03)
+        stack[-1].handle_events()
+        stack[-1].update()
+        stack[-1].draw()
 
-def handle_events():
-    global running
-    events = get_events()
-    for event in events:
-        if event.type == SDL_QUIT:
-            running = False
-        elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
-            running = False
+    # repeatedly delete the top of the stack
+    while (len(stack) > 0):
+        stack[-1].finish()
+        stack.pop()
