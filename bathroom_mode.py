@@ -22,7 +22,7 @@ def enter():
     black_screen = load_image('black.png')  # 검정 화면 배경
 
     # 소녀 초기 위치
-    girl.x, girl.y = 800, 200  # 전환 박스 밖
+    girl.x, girl.y = girl_position  # 전환 박스 밖
 
     # game_world에 객체 추가
     game_world.add_object(background, 0)
