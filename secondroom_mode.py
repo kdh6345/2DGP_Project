@@ -12,7 +12,7 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_boxes,black_screen
+    global background, girl, transition_boxes,black_screen,stairs
 
     # 기존 객체 제거
     game_world.clear()
@@ -27,6 +27,7 @@ def enter():
         TransitionBox(1600, 200, 50, 50)  # 세 번째 박스
     ]
     black_screen = load_image('black.png')
+    stairs = []
 
     # 소녀의 초기 위치 (전환 박스 밖)
     girl.x, girl.y = girl_position
@@ -77,7 +78,7 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            girl.handle_event(event)
+            girl.handle_event(event,stairs)
 
 def check_for_transition(girl, transition_box):
     girl_left = girl.x - girl.width // 2

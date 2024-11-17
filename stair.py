@@ -11,6 +11,8 @@ class Stair:
         self.y = y
         self.width = width
         self.height = height
+    def update(self):
+        pass
 
     def draw(self):
         """

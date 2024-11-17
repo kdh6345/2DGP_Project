@@ -5,15 +5,9 @@ from girl import Girl
 from stair import Stair
 from background import Background
 from transition_box import TransitionBox
-#게임 시작 시 소녀의 위치또는 사망후 재시작
-girl_initial_position = (400, 200)
-
-def set_girl_position(x, y):
-    global girl_position
-    girl_position = (x, y)
 
 def enter():
-    global girl, background, transition_box, girl_initial_position,black_screen
+    global girl, background, transition_box, stairs, black_screen
 
     # 기존 객체 제거
     game_world.clear()
@@ -24,26 +18,32 @@ def enter():
     transition_box = TransitionBox(1050, -50, 100, 50)  # 전환 박스 생성
     black_screen = load_image('black.png')
 
+    # 계단 리스트 생성
+    stairs = [
+        Stair(1050, 100, 100, 100)  # 계단 1개
+    ]
+
     # 소녀의 초기 위치 설정
-    girl.x, girl.y = girl_initial_position
+    girl.x, girl.y = 400, 200
 
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
+    for stair in stairs:
+        game_world.add_object(stair, 2)
 
 def exit():
     global background
     del background
 
 def update():
-    global girl, girl_initial_position
+    global girl
 
     # 소녀의 상태 업데이트
     game_world.update()
 
     # 소녀의 위치 확인 및 화면 전환
     if check_for_transition(girl):
-        girl_initial_position = (1050, 100)
         import secondroom_mode
         secondroom_mode.set_girl_position(850, 700)  # Secondroom에서 소녀의 초기 위치 설정
         game_framework.change_mode(secondroom_mode)
@@ -63,7 +63,8 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            girl.handle_event(event)
+            # girl과 stairs를 전역 변수로 사용
+            girl.handle_event(event, stairs)
 
 def check_for_transition(girl):
     # TransitionBox와 소녀의 히트박스 비교
@@ -83,3 +84,7 @@ def check_for_transition(girl):
 
 def finish():
     pass
+
+def set_girl_position(x, y):
+    global girl_position
+    girl_position = (x, y)
