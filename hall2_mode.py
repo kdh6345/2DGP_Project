@@ -10,19 +10,25 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_box, black_screen
+    global background, girl, transition_boxes, black_screen
 
     # 기존 객체 제거
     game_world.clear()
 
     # 새로운 객체 생성
-    background = Background('bathroom.png', 800, 400)  # 화장실 배경 이미지
+    background = Background('upstair.png', 800, 400)  # 화장실 배경 이미지
     girl = Girl()  # 소녀 객체 생성
-    transition_box = TransitionBox(1600, 200, 100, 100)  # 전환 박스 생성
+
+    # 전환 박스들 생성
+    transition_boxes = [
+        TransitionBox(-50, 200, 50, 100),   # 첫 번째 전환 박스
+        TransitionBox(100, 0, 100, 50),    # 두 번째 전환 박스
+        TransitionBox(1500, 0, 100, 50)    # 세 번째 전환 박스
+    ]
     black_screen = load_image('black.png')  # 검정 화면 배경
 
     # 소녀 초기 위치
-    girl.x, girl.y = 800, 200  # 전환 박스 밖
+    girl.x, girl.y = girl_position
 
     # game_world에 객체 추가
     game_world.add_object(background, 0)
@@ -37,19 +43,29 @@ def update():
     game_world.update()
 
     # 소녀의 위치 확인 및 화면 전환
-    if check_for_transition(girl, transition_box):
-        import secondroom_mode
-        # 소녀의 위치 설정 후 모드 전환
-        secondroom_mode.set_girl_position(100, 200)
-        game_framework.change_mode(secondroom_mode)
+    for i, transition_box in enumerate(transition_boxes):
+        if check_for_transition(girl, transition_box):
+            if i == 0:
+                import secondroom_mode
+                secondroom_mode.set_girl_position(1500, 200)
+                game_framework.change_mode(secondroom_mode)
+            elif i == 1:
+                import hall1_mode
+                hall1_mode.set_girl_position(150, 700)  # 첫 번째 Hall1 전환 위치
+                game_framework.change_mode(hall1_mode)
+            elif i == 2:
+                import hall1_mode
+                hall1_mode.set_girl_position(1500, 700)  # 두 번째 Hall1 전환 위치
+                game_framework.change_mode(hall1_mode)
 
 def draw():
     # 화면 그리기
     clear_canvas()
     black_screen.draw(800, 400, 1600, 800)  # 전체 화면에 검정 배경
     game_world.render()
-    # TransitionBox의 히트박스 그리기
-    transition_box.draw()
+    # 각 TransitionBox의 히트박스 그리기
+    for transition_box in transition_boxes:
+        transition_box.draw()
     update_canvas()
 
 def handle_events():
