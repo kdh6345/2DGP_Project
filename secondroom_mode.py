@@ -48,16 +48,16 @@ def update():
         if check_for_transition(girl, transition_box):
             if i == 0:
                 import rooftop_mode
-                rooftop_mode.set_girl_position(1050, 500)  # Rooftop 초기 위치 설정
+                rooftop_mode.set_girl_position(0,0)  # Rooftop 초기 위치 설정
                 game_framework.change_mode(rooftop_mode)
             elif i == 1:
                 import bathroom_mode
-                bathroom_mode.set_girl_position(870, 700)  # Bathroom 초기 위치 설정
+                bathroom_mode.set_girl_position(800, 200)  # Bathroom 초기 위치 설정
                 game_framework.change_mode(bathroom_mode)
             elif i == 2:
-                # 또 다른 모드로 전환
-                # 2층 홀 구현
-                print("Transition to mode 3")
+                import hall2_mode
+                hall2_mode.set_girl_position(100, 200)  # Bathroom 초기 위치 설정
+                game_framework.change_mode(hall2_mode)
 
 def draw():
     # 화면 그리기
