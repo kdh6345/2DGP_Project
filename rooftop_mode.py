@@ -6,6 +6,11 @@ from background import Background
 from transition_box import TransitionBox
 #게임 시작 시 소녀의 위치또는 사망후 재시작
 girl_initial_position = (400, 200)
+
+def set_girl_position(x, y):
+    global girl_position
+    girl_position = (x, y)
+
 def enter():
     global girl, background, transition_box, girl_initial_position,black_screen
 
@@ -39,6 +44,7 @@ def update():
     if check_for_transition(girl):
         girl_initial_position = (1050, 100)
         import secondroom_mode
+        secondroom_mode.set_girl_position(850, 700)  # Secondroom에서 소녀의 초기 위치 설정
         game_framework.change_mode(secondroom_mode)
 
 def draw():
