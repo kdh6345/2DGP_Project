@@ -52,7 +52,7 @@ def update():
                 game_framework.change_mode(rooftop_mode)
             elif i == 1:
                 import bathroom_mode
-                bathroom_mode.set_girl_position(800, 200)  # Bathroom 초기 위치 설정
+                bathroom_mode.set_girl_position(1300, 180)  # Bathroom 초기 위치 설정
                 game_framework.change_mode(bathroom_mode)
             elif i == 2:
                 import hall2_mode

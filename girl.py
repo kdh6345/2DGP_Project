@@ -8,20 +8,17 @@ class Idle:
     def enter(girl, e):
         if start_event(e):
             girl.action = 3
-            girl.face_dir = 1
         elif right_down(e) or left_up(e):
             girl.action = 2
-            girl.face_dir = -1
         elif left_down(e) or right_up(e):
             girl.action = 3
-            girl.face_dir = 1
 
         girl.frame = 0
         girl.wait_time = get_time()
 
     @staticmethod
     def exit(girl, e):
-       pass
+        pass
 
     @staticmethod
     def do(girl):
@@ -36,8 +33,14 @@ class Idle:
     def draw(girl):
         frame_width = 1354 // 3  # Idle 스프라이트 한 프레임의 너비
         frame_height = 500  # Idle 스프라이트 높이
-        girl.idle_image.clip_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
-                                  girl.x, girl.y, girl.width, girl.height)
+
+        if girl.face_dir == 1:  # 오른쪽을 바라보는 경우
+            girl.idle_image.clip_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
+                                      girl.x, girl.y, girl.width, girl.height)
+        else:  # 왼쪽을 바라보는 경우
+            girl.idle_image.clip_composite_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
+                                                0, 'h', girl.x, girl.y, girl.width, girl.height)
+
 
 class Walk:
     @staticmethod
@@ -113,6 +116,22 @@ class Girl:
             },
         })
 
+    def is_on_stair(self, stair):
+        """
+        소녀가 계단 영역 안에 있는지 확인
+        """
+        girl_left = self.x - self.width // 2
+        girl_bottom = self.y - self.height // 2
+        girl_right = self.x + self.width // 2
+        girl_top = self.y + self.height // 2
+
+        stair_left, stair_bottom, stair_right, stair_top = stair.get_bb()
+
+        # 소녀가 계단 영역에 있는지 확인
+        if girl_right > stair_left and girl_left < stair_right and girl_top > stair_bottom and girl_bottom < stair_top:
+            return True
+        return False
+
     def update(self):
         # 상태 머신 업데이트
         self.state_machine.update()
@@ -120,6 +139,13 @@ class Girl:
     def handle_event(self, event):
         # 상태 머신에 이벤트 전달
         self.state_machine.add_event(('INPUT', event))
+        # 위/아래 키 제한
+        if event.type == SDL_KEYDOWN:
+            if event.key in (SDLK_UP, SDLK_DOWN):
+                # 계단 위에 있는지 확인
+                on_any_stair = any(self.is_on_stair(stair) for stair in stairs)
+                if not on_any_stair:
+                    return  # 계단에 없으면 위/아래 키 이벤트 무시
 
     def draw(self):
         # 현재 상태의 그리기 로직 호출

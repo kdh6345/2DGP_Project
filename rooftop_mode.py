@@ -2,6 +2,7 @@ from pico2d import *
 import game_framework
 import game_world
 from girl import Girl
+from stair import Stair
 from background import Background
 from transition_box import TransitionBox
 #게임 시작 시 소녀의 위치또는 사망후 재시작
