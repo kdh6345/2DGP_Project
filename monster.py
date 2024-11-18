@@ -103,8 +103,8 @@ class Patrol:
         # 경계 처리
         if monster.x < 0 or monster.x > 1600:
             monster.dir_x *= -1
-        if monster.y < 0 or monster.y > 800:
-            monster.dir_y *= -1
+        #if monster.y < 0 or monster.y > 800:
+        #    monster.dir_y *= -1
 
         # 프레임 업데이트 (0.1초 주기로 변경)
         frame_speed = 0.1
@@ -139,13 +139,13 @@ class Chase:
         elif monster.girl.x < monster.x:
             monster.dir_x = -1
 
-        if monster.girl.y > monster.y:
-            monster.dir_y = 1
-        elif monster.girl.y < monster.y:
-            monster.dir_y = -1
+        #if monster.girl.y > monster.y:
+        #    monster.dir_y = 1
+        #elif monster.girl.y < monster.y:
+        #    monster.dir_y = -1
 
         monster.x += monster.dir_x * monster.speed
-        monster.y += monster.dir_y * monster.speed
+        #monster.y += monster.dir_y * monster.speed
 
         # 프레임 업데이트 (0.1초 주기로 변경)
         frame_speed = 0.1
