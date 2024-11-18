@@ -18,25 +18,23 @@ def enter():
     game_world.clear()
 
     # 새로운 객체 생성
-    background = Background('livingroom2.png', 800, 400)  # 홀 이미지 생성
+    background = Background('livingroom2.png', 600, 400)  # 홀 이미지 생성
     girl = Girl()  # 소녀 객체 생성
-    girl.set_y_bounds(200, 700)  # y 좌표 제한
+    girl.set_y_bounds(200, 200)  # y 좌표 제한
+    girl.set_x_bounds(100, 1100)  # secondroom에서의 y 좌표 제한
+    stairs=[]
 
-    # 계단과 전환 박스들
-    stairs = [
-        Stair(100, 400, 150, 600, -50, 200),
-        Stair(1500, 400, 150, 600, -50, 200)
-    ]
+
     transition_boxes = [
-        TransitionBox(-50, 200, 100, 100),
-        TransitionBox(100, 700, 150, 10),
-        TransitionBox(1500, 700, 150, 10),
-        TransitionBox(1650, 200, 100, 100)
+
+        TransitionBox(100, 200, 10, 100),
+        TransitionBox(1500, 200, 10, 100),
+
     ]
 
     # 몬스터 생성 (맵 내 자유롭게 돌아다니도록 설정)
-    monster = Monster(800, 200, girl, stairs)
-    monster.set_transition_boxes(transition_boxes)
+    #monster = Monster(800, 200, girl, stairs)
+    #monster.set_transition_boxes(transition_boxes)
 
     black_screen = load_image('black.png')  # 검정 화면 배경
 
@@ -46,9 +44,8 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
-    game_world.add_object(monster, 1)
-    for stair in stairs:
-        game_world.add_object(stair, 2)
+    #game_world.add_object(monster, 1)
+
 
 def exit():
     global background
@@ -62,33 +59,29 @@ def update():
     for i, transition_box in enumerate(transition_boxes):
         if check_for_transition(girl, transition_box):
             if i == 0:
-                import secondroom_mode
-                secondroom_mode.set_girl_position(1500, 200)
-                game_framework.change_mode(secondroom_mode)
+                import livingroom1_mode
+                livingroom1_mode.set_girl_position(1400, 200)
+                game_framework.change_mode(livingroom1_mode)
             elif i == 1:
-                import hall2_mode
-                hall2_mode.set_girl_position(200, 200)
-                game_framework.change_mode(hall2_mode)
-            elif i == 2:
-                import hall2_mode
-                hall2_mode.set_girl_position(1400, 200)
-                game_framework.change_mode(hall2_mode)
+                print('ending ')
+                pass
+
 
     # 몬스터가 전환 박스와 충돌할 경우
-    for i, transition_box in enumerate(transition_boxes):
-        if check_for_transition(monster, transition_box):
-            if i == 0:
-                import secondroom_mode
-                secondroom_mode.set_girl_position(1500, 200)
-                game_framework.change_mode(secondroom_mode)
-            elif i == 1:
-                import hall2_mode
-                hall2_mode.set_girl_position(200, 200)
-                game_framework.change_mode(hall2_mode)
-            elif i == 2:
-                import hall2_mode
-                hall2_mode.set_girl_position(1400, 200)
-                game_framework.change_mode(hall2_mode)
+    #for i, transition_box in enumerate(transition_boxes):
+    #    if check_for_transition(monster, transition_box):
+    #        if i == 0:
+    #            import secondroom_mode
+    #            secondroom_mode.set_girl_position(1500, 200)
+    #            game_framework.change_mode(secondroom_mode)
+    #        elif i == 1:
+    #            import hall2_mode
+    #            hall2_mode.set_girl_position(200, 200)
+    #            game_framework.change_mode(hall2_mode)
+    #        elif i == 2:
+    #            import hall2_mode
+    #            hall2_mode.set_girl_position(1400, 200)
+    #            game_framework.change_mode(hall2_mode)
 
 def draw():
     # 화면 그리기

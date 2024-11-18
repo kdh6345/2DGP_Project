@@ -1,4 +1,3 @@
-#secondroom_mode.py
 from pico2d import *
 import game_framework
 import game_world
@@ -15,7 +14,7 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_boxes,black_screen,stairs,monster
+    global background, girl, transition_boxes, black_screen, stairs, monsters
 
     # 기존 객체 제거
     game_world.clear()
@@ -24,6 +23,7 @@ def enter():
     background = Background('secondroom.png', 800, 400)  # 두 번째 방 배경 이미지
     girl = Girl()  # 소녀 객체 생성
     girl.set_y_bounds(210, 700)  # secondroom에서의 y 좌표 제한
+
     # 전환 박스들 생성
     transition_boxes = [
         TransitionBox(850, 700, 50, 50),  # 첫 번째 박스
@@ -31,16 +31,17 @@ def enter():
         TransitionBox(1600, 200, 50, 50)  # 세 번째 박스
     ]
     black_screen = load_image('black.png')
+
     stairs = [
-        Stair(850, 400, 100, 500,200,850)  # 계단 1개
+        Stair(850, 400, 100, 500, 200, 850)  # 계단 1개
     ]
+
     # 몬스터 리스트 생성
     monsters = [
-        Monster(100, 200, girl, stairs),  # 소녀를 타겟으로 하는 몬스터
+        Monster(100, 250, girl, stairs),  # 소녀를 타겟으로 하는 몬스터
     ]
 
-
-    # 소녀의 초기 위치 (전환 박스 밖)
+    # 소녀의 초기 위치 설정
     girl.x, girl.y = girl_position
 
     # game_world에 객체 추가
@@ -48,15 +49,15 @@ def enter():
     game_world.add_object(girl, 1)
     for stair in stairs:
         game_world.add_object(stair, 2)
-        for monster in monsters:
-            game_world.add_object(monster, 1)
+    for monster in monsters:
+        game_world.add_object(monster, 1)
 
 def exit():
     global background
     del background
 
 def update():
-    # 소녀 및 게임 월드 업데이트
+    # 게임 월드 업데이트
     game_world.update()
 
     # 소녀의 위치 확인 및 화면 전환
@@ -64,7 +65,7 @@ def update():
         if check_for_transition(girl, transition_box):
             if i == 0:
                 import rooftop2_mode
-                rooftop2_mode.set_girl_position(1050,210)  # Rooftop 초기 위치 설정
+                rooftop2_mode.set_girl_position(1050, 210)  # Rooftop 초기 위치 설정
                 game_framework.change_mode(rooftop2_mode)
             elif i == 1:
                 import bathroom_mode
@@ -93,20 +94,21 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            girl.handle_event(event,stairs)
+            girl.handle_event(event, stairs)
 
-def check_for_transition(girl, transition_box):
-    girl_left = girl.x - girl.width // 2
-    girl_bottom = girl.y - girl.height // 2
-    girl_right = girl.x + girl.width // 2
-    girl_top = girl.y + girl.height // 2
+def check_for_transition(entity, transition_box):
+    """소녀와 전환 박스 충돌 여부 확인"""
+    entity_left = entity.x - entity.width // 2
+    entity_bottom = entity.y - entity.height // 2
+    entity_right = entity.x + entity.width // 2
+    entity_top = entity.y + entity.height // 2
 
     box_left, box_bottom, box_right, box_top = transition_box.get_bb()
 
     # 충돌 여부 확인
-    if girl_left > box_right or girl_right < box_left:
+    if entity_left > box_right or entity_right < box_left:
         return False
-    if girl_bottom > box_top or girl_top < box_bottom:
+    if entity_bottom > box_top or entity_top < box_bottom:
         return False
     return True
 

@@ -28,14 +28,14 @@ def enter():
         Stair(1500, 400, 150, 600, -50, 200)
     ]
     transition_boxes = [
-        TransitionBox(-50, 200, 100, 100),
+        TransitionBox(0, 200, 20, 100),
         TransitionBox(100, 700, 150, 10),
         TransitionBox(1500, 700, 150, 10),
-        TransitionBox(1650, 200, 100, 100)
+        TransitionBox(1600, 200, 20, 100)
     ]
 
     # 몬스터 생성 (맵 내 자유롭게 돌아다니도록 설정)
-    monster = Monster(800, 200, girl, stairs)
+    monster = Monster(800, 250, girl, stairs)
     monster.set_transition_boxes(transition_boxes)
 
     black_screen = load_image('black.png')  # 검정 화면 배경
@@ -73,22 +73,12 @@ def update():
                 import hall2_mode
                 hall2_mode.set_girl_position(1400, 200)
                 game_framework.change_mode(hall2_mode)
+            elif i == 3:
+                import livingroom1_mode
+                livingroom1_mode.set_girl_position(200, 200)
+                game_framework.change_mode(livingroom1_mode)
 
-    # 몬스터가 전환 박스와 충돌할 경우
-    for i, transition_box in enumerate(transition_boxes):
-        if check_for_transition(monster, transition_box):
-            if i == 0:
-                import secondroom_mode
-                secondroom_mode.set_girl_position(1500, 200)
-                game_framework.change_mode(secondroom_mode)
-            elif i == 1:
-                import hall2_mode
-                hall2_mode.set_girl_position(200, 200)
-                game_framework.change_mode(hall2_mode)
-            elif i == 2:
-                import hall2_mode
-                hall2_mode.set_girl_position(1400, 200)
-                game_framework.change_mode(hall2_mode)
+
 
 def draw():
     # 화면 그리기
