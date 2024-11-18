@@ -158,92 +158,66 @@ class Hide:
                                                 0, 'h', girl.x, girl.y, girl.width, girl.height)
 class Girl:
     def __init__(self):
-        self.x, self.y = 400, 200  # 소녀의 초기 위치
-        self.face_dir = 1  # 얼굴 방향
-        self.dir_x, self.dir_y = 0, 0  # X축과 Y축 이동 방향
-        self.action = 3  # 초기 상태
+        self.x, self.y = 400, 200  # 초기 위치
+        self.face_dir = 1
+        self.dir_x, self.dir_y = 0, 0
+        self.action = 3
         self.frame = 0
         self.frame_time_accumulator = 0
-        self.image = load_image('character_walk.png')  # 걷는 상태 이미지
-        self.idle_image = load_image('character_idle.png')  # Idle 상태 이미지
+        self.image = load_image('character_walk.png')
+        self.idle_image = load_image('character_idle.png')
         self.hide_image = load_image('character_down.png')  # 숨는 상태 이미지
         self.width = 120
         self.height = 120
         self.state_machine = StateMachine(self)
-        self.y_min, self.y_max = None, None  # y 좌표의 최소/최대 값 (초기값: 제한 없음)
+        self.y_min, self.y_max = None, None
+        self.x_min, self.x_max = None, None  # x 좌표 제한 변수
 
         # 상태 머신 초기화
         self.state_machine.start(Idle)
         self.state_machine.set_transitions({
             Idle: {
                 right_down: Walk, left_down: Walk,
-                space_down: Hide,  # 숨기 시작
-                up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
+                space_down: Hide,  # space 키로 숨기 시작
             },
             Walk: {
                 right_down: Walk, left_down: Walk,
-                up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
                 right_up: Idle, left_up: Idle,
-                space_down: Hide,  # 숨기 시작
-            },
-            Climb: {
-                up_down: Climb, down_down: Climb,
-                up_up: Idle, down_up: Idle,
+                space_down: Hide,  # space 키로 숨기 시작
             },
             Hide: {
-                space_up: Idle,  # 숨기에서 빠져나오기
+                space_up: Idle,  # space 키를 떼면 숨기 종료
             },
         })
-
-    def is_on_stair(self, stair):
-        """
-        소녀가 계단 영역 안에 있는지 확인
-        """
-        girl_left = self.x - self.width // 2
-        girl_bottom = self.y - self.height // 2
-        girl_right = self.x + self.width // 2
-        girl_top = self.y + self.height // 2
-
-        stair_left, stair_bottom, stair_right, stair_top = stair.get_bb()
-
-        # 소녀가 계단 영역에 있는지 확인
-        if girl_right > stair_left and girl_left < stair_right and girl_top > stair_bottom and girl_bottom < stair_top:
-            return True
-        return False
 
     def set_y_bounds(self, y_min, y_max):
         """y 좌표의 최소값과 최대값 설정"""
         self.y_min = y_min
         self.y_max = y_max
 
+    def set_x_bounds(self, x_min, x_max):
+        """x 좌표의 최소값과 최대값 설정"""
+        self.x_min = x_min
+        self.x_max = x_max
+
     def update(self):
-        # 상태 머신 업데이트
         self.state_machine.update()
 
-        # y 좌표를 최소/최대 값으로 제한
+        # y 값 제한 적용
         if self.y_min is not None and self.y < self.y_min:
             self.y = self.y_min
         if self.y_max is not None and self.y > self.y_max:
             self.y = self.y_max
 
-    def handle_event(self, event, stairs):
-        """
-        소녀의 이벤트 처리
-        stairs: 계단 리스트
-        """
-        # 상태 머신에 이벤트 전달
-        if event.type == SDL_KEYDOWN:
-            if event.key in (SDLK_UP, SDLK_DOWN):
-                # 계단 위에 있는지 확인
-                on_stair = any(self.is_on_stair(stair) for stair in stairs)
-                if not on_stair:
-                    print(' Not on_stair')
-                    # Climb 상태로 전환
-                    self.state_machine.add_event(('climb', event))
-                    return  # 상태 전환 후 더 이상 처리하지 않음
+        # x 값 제한 적용
+        if self.x_min is not None and self.x < self.x_min:
+            self.x = self.x_min
+        if self.x_max is not None and self.x > self.x_max:
+            self.x = self.x_max
 
+    def handle_event(self, event, stairs):
         self.state_machine.add_event(('INPUT', event))
 
     def draw(self):
-        # 현재 상태의 그리기 로직 호출
         self.state_machine.draw()
+

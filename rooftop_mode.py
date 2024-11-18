@@ -10,6 +10,7 @@ from transition_box import TransitionBox
 
 # 소녀의 초기 위치를 저장하는 변수
 girl_position = (400, 200)
+open_jail=False
 
 def set_girl_position(x, y):
 
@@ -21,12 +22,20 @@ def enter():
 
     # 기존 객체 제거
     game_world.clear()
-
-    # 새로운 객체 생성
-    background = Background('start room1.png', 800, 400)  # 옥상 배경 이미지
-    fence=Fence()
     girl = Girl()  # 소녀 객체 생성
     girl.set_y_bounds(100, 200)  # rooftop에서의 y 좌표 제한
+
+    # 새로운 객체 생성
+    if open_jail==False:
+        background = Background('start room1.png', 800, 400)  # 옥상 배경 이미지
+        girl.set_x_bounds(300, 550)
+    elif open_jail==True:
+        background = Background('start room2.png', 800, 400)  # 옥상 배경 이미지
+        girl.set_x_bounds(300, 1600)
+
+    fence=Fence()
+
+
     transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
     black_screen = load_image('black.png')
 
