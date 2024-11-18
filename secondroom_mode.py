@@ -3,6 +3,7 @@ import game_framework
 import game_world
 from girl import Girl
 from background import Background
+from monster import Monster
 from transition_box import TransitionBox
 from stair import Stair
 
@@ -13,7 +14,7 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_boxes,black_screen,stairs
+    global background, girl, transition_boxes,black_screen,stairs,monster
 
     # 기존 객체 제거
     game_world.clear()
@@ -32,6 +33,11 @@ def enter():
     stairs = [
         Stair(850, 400, 100, 500,200,850)  # 계단 1개
     ]
+    # 몬스터 리스트 생성
+    monsters = [
+        Monster(800, 200, girl, stairs),  # 소녀를 타겟으로 하는 몬스터
+    ]
+
 
     # 소녀의 초기 위치 (전환 박스 밖)
     girl.x, girl.y = girl_position
@@ -41,6 +47,8 @@ def enter():
     game_world.add_object(girl, 1)
     for stair in stairs:
         game_world.add_object(stair, 2)
+        for monster in monsters:
+            game_world.add_object(monster, 1)
 
 def exit():
     global background

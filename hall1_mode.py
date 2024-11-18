@@ -19,6 +19,7 @@ def enter():
     # 새로운 객체 생성
     background = Background('hall.png', 800, 400)  #홀 이미지 생성
     girl = Girl()  # 소녀 객체 생성
+    girl.set_y_bounds(200, 700)  # secondroom에서의 y 좌표 제한
     stairs = [
         Stair(100, 400, 150, 600, -50, 200),  # 계단 1개
         Stair(1500, 400, 150, 600, -50, 200)  # 계단 1개

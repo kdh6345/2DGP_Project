@@ -2,6 +2,7 @@ from pico2d import *
 import game_framework
 import game_world
 from girl import Girl
+from monster import Monster
 from stair import Stair
 from background import Background
 from transition_box import TransitionBox
@@ -37,7 +38,8 @@ def enter():
 
     # game_world에 객체 추가
     game_world.add_object(background, 0)
-    game_world.add_object(girl, 1)
+
+    game_world.add_object(girl, 2)
     for stair in stairs:
         game_world.add_object(stair, 2)
 

@@ -21,6 +21,7 @@ def enter():
     transition_box = TransitionBox(1600, 200, 100, 100)  # 전환 박스 생성
     black_screen = load_image('black.png')  # 검정 화면 배경
     stairs=[]
+    girl.set_y_bounds(210, 250)  # secondroom에서의 y 좌표 제한
 
     # 소녀 초기 위치
     girl.x, girl.y = girl_position  # 전환 박스 밖
