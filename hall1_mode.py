@@ -3,6 +3,7 @@ import game_framework
 import game_world
 from girl import Girl
 from background import Background
+from stair import Stair
 from transition_box import TransitionBox
 
 def set_girl_position(x, y):
@@ -10,7 +11,7 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_boxes, black_screen
+    global background, girl, transition_boxes, black_screen,stairs
 
     # 기존 객체 제거
     game_world.clear()
@@ -18,12 +19,16 @@ def enter():
     # 새로운 객체 생성
     background = Background('hall.png', 800, 400)  #홀 이미지 생성
     girl = Girl()  # 소녀 객체 생성
+    stairs = [
+        Stair(100, 400, 150, 600, -50, 200),  # 계단 1개
+        Stair(1500, 400, 150, 600, -50, 200)  # 계단 1개
+    ]
 
     # 전환 박스들 생성
     transition_boxes = [
         TransitionBox(-50, 200, 100, 100),   # 첫 번째 전환 박스
-        TransitionBox(100, 850, 100, 100),    # 두 번째 전환 박스
-        TransitionBox(1500, 850, 100, 100),    # 세 번째 전환 박스
+        TransitionBox(100, 700, 150, 10),  # 두 번째 전환 박스
+        TransitionBox(1500, 700, 150, 10) , # 세 번째 전환 박스
         TransitionBox(1650, 200, 100, 100)  # 네 번째 전환 박스
     ]
     black_screen = load_image('black.png')  # 검정 화면 배경
@@ -34,6 +39,8 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
+    for stair in stairs:
+        game_world.add_object(stair, 2)
 
 def exit():
     global background
@@ -77,7 +84,7 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            girl.handle_event(event)
+            girl.handle_event(event,stairs)
 
 def check_for_transition(girl, transition_box):
     # TransitionBox와 소녀의 히트박스 비교

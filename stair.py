@@ -1,16 +1,14 @@
 from pico2d import *
 
 class Stair:
-    def __init__(self, x, y, width, height):
-        """
-        계단 초기화
-        x, y: 계단 중심 좌표
-        width, height: 계단 크기
-        """
+    def __init__(self, x, y, width, height,min_y,max_y):
+
         self.x = x
         self.y = y
         self.width = width
         self.height = height
+        self.min_y = min_y  # 계단 이동 가능한 최소 y값
+        self.max_y = max_y  # 계단 이동 가능한 최대 y값
     def update(self):
         pass
 

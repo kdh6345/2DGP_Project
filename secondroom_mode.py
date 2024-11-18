@@ -4,6 +4,7 @@ import game_world
 from girl import Girl
 from background import Background
 from transition_box import TransitionBox
+from stair import Stair
 
 girl_position = (400, 700)  # 기본 초기 위치
 
@@ -22,12 +23,14 @@ def enter():
     girl = Girl()  # 소녀 객체 생성
     # 전환 박스들 생성
     transition_boxes = [
-        TransitionBox(850, 1000, 50, 50),  # 첫 번째 박스
+        TransitionBox(850, 700, 50, 50),  # 첫 번째 박스
         TransitionBox(0, 200, 50, 50),  # 두 번째 박스
         TransitionBox(1600, 200, 50, 50)  # 세 번째 박스
     ]
     black_screen = load_image('black.png')
-    stairs = []
+    stairs = [
+        Stair(850, 400, 100, 500,200,850)  # 계단 1개
+    ]
 
     # 소녀의 초기 위치 (전환 박스 밖)
     girl.x, girl.y = girl_position
@@ -35,6 +38,8 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
+    for stair in stairs:
+        game_world.add_object(stair, 2)
 
 def exit():
     global background
@@ -49,15 +54,15 @@ def update():
         if check_for_transition(girl, transition_box):
             if i == 0:
                 import rooftop_mode
-                rooftop_mode.set_girl_position(0,0)  # Rooftop 초기 위치 설정
+                rooftop_mode.set_girl_position(1050,210)  # Rooftop 초기 위치 설정
                 game_framework.change_mode(rooftop_mode)
             elif i == 1:
                 import bathroom_mode
-                bathroom_mode.set_girl_position(1300, 180)  # Bathroom 초기 위치 설정
+                bathroom_mode.set_girl_position(1300, 210)  # Bathroom 초기 위치 설정
                 game_framework.change_mode(bathroom_mode)
             elif i == 2:
                 import hall2_mode
-                hall2_mode.set_girl_position(100, 200)  # Bathroom 초기 위치 설정
+                hall2_mode.set_girl_position(100, 250)  # Hall2 초기 위치 설정
                 game_framework.change_mode(hall2_mode)
 
 def draw():

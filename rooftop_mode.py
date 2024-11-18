@@ -6,6 +6,14 @@ from stair import Stair
 from background import Background
 from transition_box import TransitionBox
 
+# 소녀의 초기 위치를 저장하는 변수
+girl_position = (400, 200)
+
+def set_girl_position(x, y):
+
+    global girl_position
+    girl_position = (x, y)
+
 def enter():
     global girl, background, transition_box, stairs, black_screen
 
@@ -15,16 +23,16 @@ def enter():
     # 새로운 객체 생성
     background = Background('start room1.png', 800, 400)  # 옥상 배경 이미지
     girl = Girl()  # 소녀 객체 생성
-    transition_box = TransitionBox(1050, -50, 100, 50)  # 전환 박스 생성
+    transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
     black_screen = load_image('black.png')
 
     # 계단 리스트 생성
     stairs = [
-        Stair(1050, 100, 100, 100)  # 계단 1개
+        Stair(1050, 200, 100, 200,-50,200)  # 계단 1개
     ]
 
     # 소녀의 초기 위치 설정
-    girl.x, girl.y = 400, 200
+    girl.x, girl.y =  girl_position
 
     # game_world에 객체 추가
     game_world.add_object(background, 0)
@@ -44,8 +52,9 @@ def update():
 
     # 소녀의 위치 확인 및 화면 전환
     if check_for_transition(girl):
+        girl_position = (1050, 100)
         import secondroom_mode
-        secondroom_mode.set_girl_position(850, 700)  # Secondroom에서 소녀의 초기 위치 설정
+        secondroom_mode.set_girl_position(850, 600)  # Secondroom에서 소녀의 초기 위치 설정
         game_framework.change_mode(secondroom_mode)
 
 def draw():
@@ -85,6 +94,3 @@ def check_for_transition(girl):
 def finish():
     pass
 
-def set_girl_position(x, y):
-    global girl_position
-    girl_position = (x, y)

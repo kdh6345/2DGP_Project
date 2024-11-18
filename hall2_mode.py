@@ -4,26 +4,31 @@ import game_world
 from girl import Girl
 from background import Background
 from transition_box import TransitionBox
+from stair import Stair
 
 def set_girl_position(x, y):
     global girl_position
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_boxes, black_screen
+    global background, girl, transition_boxes, black_screen,stairs
 
     # 기존 객체 제거
     game_world.clear()
 
     # 새로운 객체 생성
-    background = Background('upstair.png', 800, 400)  # 화장실 배경 이미지
+    background = Background('upstair.png', 800, 450)  # 화장실 배경 이미지
     girl = Girl()  # 소녀 객체 생성
+    stairs=[
+        Stair(150, 100, 300, 200, -50, 200) , # 계단 1개
+        Stair(1450, 100, 300, 200, -50, 200)  # 계단 1개
+    ]
 
     # 전환 박스들 생성
     transition_boxes = [
         TransitionBox(-50, 200, 50, 100),   # 첫 번째 전환 박스
-        TransitionBox(100, 0, 100, 50),    # 두 번째 전환 박스
-        TransitionBox(1500, 0, 100, 50)    # 세 번째 전환 박스
+        TransitionBox(100, 100, 150, 10),    # 두 번째 전환 박스
+        TransitionBox(1500, 100, 150, 10)    # 세 번째 전환 박스
     ]
     black_screen = load_image('black.png')  # 검정 화면 배경
 
@@ -33,6 +38,8 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
+    for stair in stairs:
+        game_world.add_object(stair, 2)
 
 def exit():
     global background
@@ -47,15 +54,15 @@ def update():
         if check_for_transition(girl, transition_box):
             if i == 0:
                 import secondroom_mode
-                secondroom_mode.set_girl_position(1500, 200)
+                secondroom_mode.set_girl_position(1500, 210)
                 game_framework.change_mode(secondroom_mode)
             elif i == 1:
                 import hall1_mode
-                hall1_mode.set_girl_position(150, 700)  # 첫 번째 Hall1 전환 위치
+                hall1_mode.set_girl_position(150, 600)  # 첫 번째 Hall1 전환 위치
                 game_framework.change_mode(hall1_mode)
             elif i == 2:
                 import hall1_mode
-                hall1_mode.set_girl_position(1500, 700)  # 두 번째 Hall1 전환 위치
+                hall1_mode.set_girl_position(1500, 600)  # 두 번째 Hall1 전환 위치
                 game_framework.change_mode(hall1_mode)
 
 def draw():
@@ -76,7 +83,7 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            girl.handle_event(event)
+            girl.handle_event(event,stairs)
 
 def check_for_transition(girl, transition_box):
     # TransitionBox와 소녀의 히트박스 비교

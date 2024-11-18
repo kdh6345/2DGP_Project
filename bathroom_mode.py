@@ -10,16 +10,17 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_box, black_screen
+    global background, girl, transition_box, black_screen,stairs
 
     # 기존 객체 제거
     game_world.clear()
 
     # 새로운 객체 생성
-    background = Background('bathroom.png', 800, 400)  # 화장실 배경 이미지
+    background = Background('bathroom.png', 800, 445)  # 화장실 배경 이미지
     girl = Girl()  # 소녀 객체 생성
     transition_box = TransitionBox(1600, 200, 100, 100)  # 전환 박스 생성
     black_screen = load_image('black.png')  # 검정 화면 배경
+    stairs=[]
 
     # 소녀 초기 위치
     girl.x, girl.y = girl_position  # 전환 박스 밖
@@ -40,7 +41,7 @@ def update():
     if check_for_transition(girl, transition_box):
         import secondroom_mode
         # 소녀의 위치 설정 후 모드 전환
-        secondroom_mode.set_girl_position(100, 200)
+        secondroom_mode.set_girl_position(100, 210)
         game_framework.change_mode(secondroom_mode)
 
 def draw():
@@ -60,7 +61,7 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            girl.handle_event(event)
+            girl.handle_event(event,stairs)
 
 def check_for_transition(girl, transition_box):
     # TransitionBox와 소녀의 히트박스 비교
