@@ -2,33 +2,29 @@ from pico2d import *
 import game_framework
 import game_world
 from girl import Girl
-from item import Key
-from monster import Monster
 from stair import Stair
 from background import Background, Fence
 from transition_box import TransitionBox
 
 # 소녀의 초기 위치를 저장하는 변수
 girl_position = (400, 200)
-open_jail = False  # Jail 상태를 나타내는 플래그
 
 def set_girl_position(x, y):
     global girl_position
     girl_position = (x, y)
 
 def enter():
-    global girl, background, transition_box, stairs, black_screen, key, fence
+    global girl, background, transition_box, stairs, black_screen, fence
 
     # 기존 객체 제거
     game_world.clear()
     girl = Girl()  # 소녀 객체 생성
     girl.set_y_bounds(100, 200)  # rooftop에서의 y 좌표 제한
-    girl.set_x_bounds(300, 550)  # 초기 Jail 범위
+    girl.set_x_bounds(300, 1600)  # x 좌표 범위 확장
 
     # 새로운 객체 생성
-    background = Background('start room1.png', 800, 400)  # 닫힌 Jail 배경
+    background = Background('start room2.png', 800, 400)  # 열린 Jail 배경
     fence = Fence()
-    key = Key(300, 150)  # 키 위치 설정
     transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
     black_screen = load_image('black.png')
 
@@ -42,7 +38,6 @@ def enter():
 
     # game_world에 객체 추가
     game_world.add_object(background, 0)
-    game_world.add_object(key, 1)
     game_world.add_object(girl, 1)
     game_world.add_object(fence, 2)
     for stair in stairs:
@@ -57,12 +52,6 @@ def update():
 
     # 게임 월드 업데이트
     game_world.update()
-
-    # Jail 열림 확인
-    if open_jail:
-        import rooftop2_mode
-        rooftop2_mode.set_girl_position(girl.x, girl.y)
-        game_framework.change_mode(rooftop2_mode)
 
     # 소녀의 위치 확인 및 화면 전환
     if check_for_transition(girl):

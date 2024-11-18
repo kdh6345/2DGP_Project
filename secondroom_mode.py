@@ -63,9 +63,9 @@ def update():
     for i, transition_box in enumerate(transition_boxes):
         if check_for_transition(girl, transition_box):
             if i == 0:
-                import rooftop_mode
-                rooftop_mode.set_girl_position(1050,210)  # Rooftop 초기 위치 설정
-                game_framework.change_mode(rooftop_mode)
+                import rooftop2_mode
+                rooftop2_mode.set_girl_position(1050,210)  # Rooftop 초기 위치 설정
+                game_framework.change_mode(rooftop2_mode)
             elif i == 1:
                 import bathroom_mode
                 bathroom_mode.set_girl_position(1300, 210)  # Bathroom 초기 위치 설정

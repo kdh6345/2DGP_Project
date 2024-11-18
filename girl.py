@@ -216,6 +216,9 @@ class Girl:
                 right_up: Idle, left_up: Idle,
                 enter_down: Hide, c_down: UseItem, # space 키로 숨기 시작
             },
+            Climb: {
+                up_up: Idle, down_up: Idle,  # 위/아래 키를 놓으면 Idle 상태로 전환
+            },
             Hide: {
                 up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
                 enter_up: Idle,  # space 키를 떼면 숨기 종료
