@@ -4,6 +4,7 @@ import game_framework
 import game_world
 from girl import Girl
 from background import Background
+from item import Key2
 from transition_box import TransitionBox
 
 def set_girl_position(x, y):
@@ -11,7 +12,7 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_box, black_screen,stairs
+    global background, girl, transition_box, black_screen,stairs,key
 
     # 기존 객체 제거
     game_world.clear()
@@ -23,6 +24,7 @@ def enter():
     black_screen = load_image('black.png')  # 검정 화면 배경
     stairs=[]
     girl.set_y_bounds(210, 250)  # secondroom에서의 y 좌표 제한
+    key = Key2(560, 300)  # 키 위치 설정
 
     # 소녀 초기 위치
     girl.x, girl.y = girl_position  # 전환 박스 밖
@@ -30,6 +32,7 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
+    game_world.add_object(key, 1)
 
 def exit():
     global background

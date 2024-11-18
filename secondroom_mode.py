@@ -38,7 +38,7 @@ def enter():
 
     # 몬스터 리스트 생성
     monsters = [
-        Monster(100, 250, girl, stairs),  # 소녀를 타겟으로 하는 몬스터
+        Monster(100, 250, girl),  # 소녀를 타겟으로 하는 몬스터
     ]
 
     # 소녀의 초기 위치 설정

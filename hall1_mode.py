@@ -35,8 +35,8 @@ def enter():
     ]
 
     # 몬스터 생성 (맵 내 자유롭게 돌아다니도록 설정)
-    monster = Monster(800, 250, girl, stairs)
-    monster.set_transition_boxes(transition_boxes)
+    monster = Monster(800, 250, girl)
+    #monster.set_transition_boxes(transition_boxes)
 
     black_screen = load_image('black.png')  # 검정 화면 배경
 

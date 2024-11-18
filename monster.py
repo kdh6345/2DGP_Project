@@ -1,154 +1,159 @@
 from pico2d import *
 import random
+
 import game_framework
-import game_world
-from state_machine import StateMachine
+from girl import *
 
 
-class Idle:
-    @staticmethod
-    def enter(monster, event):
-        monster.dir_x = 0
-        monster.dir_y = 0
-        monster.speed = 0
-        monster.frame_time_accumulator = 0
+class Monster:
+    def __init__(self, x, y, girl):
+        self.x = x
+        self.y = y
+        self.dir_x = random.choice([-1, 1])
+        self.dir_y = random.choice([-1, 1])
+        self.speed = 0.2
+        self.frame = 0
+        self.frame_time_accumulator = 0
+        self.image = load_image('monster_idle.png')
+        self.girl = girl
+        self.width = 200
+        self.height = 200
+        self.detection_rangex = 200
+        self.detection_rangey = 100
+        self.is_detecting = False
+        self.current_state = Patrol  # 현재 상태
 
-    @staticmethod
-    def exit(monster, event):
-        pass
+    def is_girl_in_detection(self):
+        """소녀가 감지 범위 내에 있는지 확인"""
+        # 소녀가 Hide 상태라면 감지하지 않음
+        if isinstance(self.girl.state_machine.cur_state, Hide):
+            print("Girl is in Hide state. Not detecting.")
+            return False
 
-    @staticmethod
-    def do(monster):
-        frame_speed = 0.1
-        monster.frame_time_accumulator += game_framework.frame_time
+        # 소녀가 action 4일 경우 감지하지 않음
+        if self.girl.action == 4:
+            print("Girl action is 4 (hiding). Not detecting.")
+            return False
 
-        if monster.frame_time_accumulator >= frame_speed:
-            monster.frame = (monster.frame + 1) % 7
-            monster.frame_time_accumulator = 0
+        girl_left, girl_bottom, girl_right, girl_top = self.girl.get_bb()
+        monster_left, monster_bottom, monster_right, monster_top = self.get_detection_bb()
 
-    @staticmethod
-    def draw(monster):
-        frame_width = 3530 // 7
-        frame_height = 500
-        monster.image.clip_draw(monster.frame * frame_width, 0, frame_width, frame_height,
-                                monster.x, monster.y, 250, 250)
+        detected = not (
+                girl_right < monster_left or
+                girl_left > monster_right or
+                girl_top < monster_bottom or
+                girl_bottom > monster_top
+        )
+
+        if detected:
+            print("Girl detected!")
+        return detected
+
+    def get_detection_bb(self):
+        """몬스터의 감지 히트박스 반환"""
+        if self.dir_x > 0:  # 오른쪽을 바라보는 경우
+            left = self.x-self.detection_rangex*0.5
+            right = self.x + self.detection_rangex * 2
+        else:  # 왼쪽을 바라보는 경우
+            left = self.x - self.detection_rangex * 2
+            right = self.x+self.detection_rangex*0.5
+        bottom = self.y - self.detection_rangey
+
+        top = self.y + self.detection_rangey
+        return left, bottom, right, top
+
+    def update(self):
+        self.is_detecting = self.is_girl_in_detection()
+
+        # 상태 전환 처리
+        if self.is_detecting and self.current_state != Chase:
+            self.change_state(Chase)
+        elif not self.is_detecting and self.current_state != Patrol:
+            self.change_state(Patrol)
+
+        # 현재 상태의 행동 수행
+        self.current_state.do(self)
+
+    def draw(self):
+        self.current_state.draw(self)
+        draw_rectangle(*self.get_detection_bb())  # 감지 히트박스 시각화
+
+    def change_state(self, new_state):
+        """상태 변경 처리"""
+        if self.current_state:
+            self.current_state.exit(self)
+        self.current_state = new_state
+        self.current_state.enter(self)
 
 
 class Patrol:
     @staticmethod
-    def enter(monster, event):
-        monster.dir_x = random.choice([-1, 1])  # 랜덤한 x 방향
-        monster.dir_y = random.choice([-1, 1]) if monster.is_on_any_stair() else 0
-        monster.speed = 0.1
-        monster.frame_time_accumulator = 0
+    def enter(monster):
+        print("Monster entered Patrol state.")
+        monster.speed = 0.2  # 순찰 속도
 
     @staticmethod
-    def exit(monster, event):
+    def exit(monster):
         pass
 
     @staticmethod
     def do(monster):
-        # x축 이동
         monster.x += monster.dir_x * monster.speed
 
-        # y축 이동 (계단 위에서만)
-        if monster.is_on_any_stair():
-            monster.y += monster.dir_y * monster.speed
-        else:
-            monster.dir_y = 0  # 계단 밖에서는 y축 이동 불가
-
-        # 경계 처리 (x축만 제한)
+        # 경계 처리
         if monster.x < 0 or monster.x > 1600:
             monster.dir_x *= -1
+        if monster.y < 0 or monster.y > 800:
+            monster.dir_y *= -1
 
-        # TransitionBox 충돌 확인
-        #transition_box = monster.check_transition_box()
-        #if transition_box:
-        #    next_mode = transition_box.next_mode  # TransitionBox에 연결된 모드 가져오기
-        #    game_framework.change_mode(next_mode)
-
-        # 프레임 처리
+        # 프레임 업데이트 (0.1초 주기로 변경)
         frame_speed = 0.1
         monster.frame_time_accumulator += game_framework.frame_time
-
         if monster.frame_time_accumulator >= frame_speed:
-            monster.frame = (monster.frame + 1) % 7
+            monster.frame = (monster.frame + 1) % 7  # 프레임 개수에 따라 반복
             monster.frame_time_accumulator = 0
 
     @staticmethod
     def draw(monster):
-        frame_width = 3530 // 7
+        frame_width = 3530 // 7  # 이미지의 총 너비 / 프레임 수
         frame_height = 500
         flip = 'h' if monster.dir_x > 0 else ''  # 이동 방향에 따라 플립
         monster.image.clip_composite_draw(monster.frame * frame_width, 0, frame_width, frame_height,
                                           0, flip, monster.x, monster.y, 250, 250)
 
 
-class Monster:
-    def __init__(self, x, y, girl, stairs):
-        self.x = x
-        self.y = y
-        self.dir_x = 0
-        self.dir_y = 0
-        self.speed = 1
-        self.frame = 0
-        self.frame_time_accumulator = 0
-        self.image = load_image('monster_idle.png')
-        self.state_machine = StateMachine(self)
-        self.stairs = stairs
-        self.transition_boxes = []  # TransitionBox 리스트
-        self.width = 200  # 몬스터의 너비
-        self.height = 200  # 몬스터의 높이
+class Chase:
+    @staticmethod
+    def enter(monster):
+        print("Monster entered Chase state.")
+        monster.speed = 0.5  # 추격 속도
 
-        # 상태 머신 초기화
-        self.state_machine.start(Patrol)
-        self.state_machine.set_transitions({
-            Patrol: {
-                lambda monster: False: Idle  # 상태 전환 조건 없음 (임의 설정)
-            },
-            Idle: {
-                lambda monster: True: Patrol  # 항상 Patrol로 전환
-            }
-        })
+    @staticmethod
+    def exit(monster):
+        pass
 
-    def is_on_stair(self, stair):
-        """몬스터가 특정 계단 위에 있는지 확인"""
-        monster_left = self.x - 50
-        monster_bottom = self.y - 50
-        monster_right = self.x + 50
-        monster_top = self.y + 50
+    @staticmethod
+    def do(monster):
+        if monster.girl.x > monster.x:
+            monster.dir_x = 1
+        elif monster.girl.x < monster.x:
+            monster.dir_x = -1
 
-        stair_left, stair_bottom, stair_right, stair_top = stair.get_bb()
+        if monster.girl.y > monster.y:
+            monster.dir_y = 1
+        elif monster.girl.y < monster.y:
+            monster.dir_y = -1
 
-        return (
-            monster_right > stair_left and
-            monster_left < stair_right and
-            monster_top > stair_bottom and
-            monster_bottom < stair_top
-        )
+        monster.x += monster.dir_x * monster.speed
+        monster.y += monster.dir_y * monster.speed
 
-    def is_on_any_stair(self):
-        """몬스터가 계단 위에 있는지 확인"""
-        return any(self.is_on_stair(stair) for stair in self.stairs)
+        # 프레임 업데이트 (0.1초 주기로 변경)
+        frame_speed = 0.1
+        monster.frame_time_accumulator += game_framework.frame_time
+        if monster.frame_time_accumulator >= frame_speed:
+            monster.frame = (monster.frame + 1) % 7  # 프레임 개수에 따라 반복
+            monster.frame_time_accumulator = 0
 
-    def set_transition_boxes(self, transition_boxes):
-        """TransitionBox 리스트 설정"""
-        self.transition_boxes = transition_boxes
-
-    def check_transition_box(self):
-        """TransitionBox와의 충돌 확인"""
-        for transition_box in self.transition_boxes:
-            box_left, box_bottom, box_right, box_top = transition_box.get_bb()
-
-            if (self.x + self.width // 2 > box_left and
-                self.x - self.width // 2 < box_right and
-                self.y + self.height // 2 > box_bottom and
-                self.y - self.height // 2 < box_top):
-                return transition_box
-        return None
-
-    def update(self):
-        self.state_machine.update()
-
-    def draw(self):
-        self.state_machine.draw()
+    @staticmethod
+    def draw(monster):
+        Patrol.draw(monster)  # 추격 시에도 동일한 애니메이션

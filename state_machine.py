@@ -1,5 +1,5 @@
 #state_machine.py
-
+from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDL_KEYUP, SDLK_KP_ENTER
 from sdl2 import *
 
 def start_event(e):
