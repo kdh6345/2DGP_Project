@@ -23,6 +23,7 @@ def enter():
     # 새로운 객체 생성
     background = Background('start room1.png', 800, 400)  # 옥상 배경 이미지
     girl = Girl()  # 소녀 객체 생성
+    girl.set_y_bounds(100, 200)  # rooftop에서의 y 좌표 제한
     transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
     black_screen = load_image('black.png')
 
