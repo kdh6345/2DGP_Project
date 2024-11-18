@@ -1,5 +1,6 @@
 #state_machine.py
-from sdl2 import SDL_KEYDOWN, SDLK_SPACE, SDLK_RIGHT, SDLK_LEFT, SDLK_UP, SDLK_DOWN, SDL_KEYUP
+
+from sdl2 import *
 
 def start_event(e):
     return e[0] == 'START'
@@ -33,6 +34,16 @@ def space_down(e):
 
 def space_up(e):
     return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_SPACE
+
+from sdl2 import SDL_KEYDOWN, SDLK_RETURN, SDL_KEYUP
+
+def enter_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_RETURN
+
+def enter_up(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYUP and e[1].key == SDLK_RETURN
+def c_down(e):
+    return e[0] == 'INPUT' and e[1].type == SDL_KEYDOWN and e[1].key == SDLK_c
 
 def time_out(e):
     return e[0] == 'TIME_OUT'

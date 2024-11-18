@@ -1,25 +1,28 @@
 #game_world.py
+from girl import Girl
+
 objects = [[] for _ in range(4)]
+girl = None  # 소녀 객체를 전역으로 관리
 
-
-def add_object(o, depth = 0):
+def add_object(o, depth=0):
+    global girl
+    if isinstance(o, Girl):  # Girl 객체라면 저장
+        girl = o
     objects[depth].append(o)
 
-def add_objects(ol, depth = 0):
-    objects[depth] += ol
-
+def get_girl():
+    """소녀 객체를 반환"""
+    return girl
 
 def update():
     for layer in objects:
         for o in layer:
             o.update()
 
-
 def render():
     for layer in objects:
         for o in layer:
             o.draw()
-
 
 def remove_object(o):
     for layer in objects:

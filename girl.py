@@ -1,9 +1,38 @@
-#girl.py
-from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
+from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_RETURN, SDLK_LEFT, SDLK_RIGHT, SDLK_c
+
+from item import Key
 from state_machine import *
 import game_world
-
 import game_framework
+
+class UseItem:
+    """아이템을 사용하는 상태"""
+    @staticmethod
+    def enter(girl, e):
+        if girl.holding_item:
+            girl.use_item_callback(girl.holding_item)  # 아이템 사용 콜백 호출
+            girl.holding_item = None  # 아이템 초기화
+
+    @staticmethod
+    def exit(girl, e):
+        pass
+
+    @staticmethod
+    def do(girl):
+        pass
+
+    @staticmethod
+    def draw(girl):
+        # 소녀를 Idle 상태처럼 기본적으로 그리기
+        frame_width = 1354 // 3  # Idle 스프라이트 한 프레임의 너비
+        frame_height = 500  # Idle 스프라이트 높이
+
+        if girl.face_dir == 1:  # 오른쪽을 바라보는 경우
+            girl.idle_image.clip_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
+                                      girl.x, girl.y, girl.width, girl.height)
+        else:  # 왼쪽을 바라보는 경우
+            girl.idle_image.clip_composite_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
+                                                0, 'h', girl.x, girl.y, girl.width, girl.height)
 
 class Idle:
     @staticmethod
@@ -52,7 +81,6 @@ class Walk:
         elif left_down(e):  # 왼쪽 이동
             girl.dir_x, girl.face_dir = -1, -1
 
-
         girl.frame_time_accumulator = 0  # Walk 상태에서 프레임 시간 초기화
 
     @staticmethod
@@ -72,7 +100,6 @@ class Walk:
 
         # 이동 처리
         girl.x += girl.dir_x * 1  # X축 이동
-        #girl.y += girl.dir_y * 1  # Y축 이동
 
     @staticmethod
     def draw(girl):
@@ -167,8 +194,10 @@ class Girl:
         self.image = load_image('character_walk.png')
         self.idle_image = load_image('character_idle.png')
         self.hide_image = load_image('character_down.png')  # 숨는 상태 이미지
+        self.key_image = load_image('key.png')  # 키 이미지 추가
         self.width = 120
         self.height = 120
+        self.holding_key = False  # 키를 쥐고 있는 상태 여부
         self.state_machine = StateMachine(self)
         self.y_min, self.y_max = None, None
         self.x_min, self.x_max = None, None  # x 좌표 제한 변수
@@ -178,15 +207,23 @@ class Girl:
         self.state_machine.set_transitions({
             Idle: {
                 right_down: Walk, left_down: Walk,
-                space_down: Hide,  # space 키로 숨기 시작
+                enter_down: Hide,  c_down: UseItem,
+                up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
             },
             Walk: {
                 right_down: Walk, left_down: Walk,
+                up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
                 right_up: Idle, left_up: Idle,
-                space_down: Hide,  # space 키로 숨기 시작
+                enter_down: Hide, c_down: UseItem, # space 키로 숨기 시작
             },
             Hide: {
-                space_up: Idle,  # space 키를 떼면 숨기 종료
+                up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
+                enter_up: Idle,  # space 키를 떼면 숨기 종료
+                c_down: UseItem,
+
+            },
+            UseItem: {
+                start_event: Idle,  # UseItem 상태에서 다시 Idle로 전환
             },
         })
 
@@ -220,4 +257,29 @@ class Girl:
 
     def draw(self):
         self.state_machine.draw()
+        if self.holding_key:
+            # 키를 소녀의 오른손 위치에 그리기
+            key_offset_x = 30 if self.face_dir == 1 else -30
+            key_offset_y = 50
+            self.key_image.draw(self.x + key_offset_x, self.y  , 40, 40)
+
+    def pick_up_item(self, item):
+        """소녀가 아이템을 들게 설정"""
+        self.holding_item = item
+        print(f"Picked up {item.__class__.__name__}")
+
+    def use_item_callback(self, item):
+        """아이템을 사용할 때의 동작"""
+        if isinstance(item, Key):  # 키를 사용했을 경우
+            import rooftop_mode
+            rooftop_mode.open_jail = True
+            print("Jail opened!")
+
+    def get_bb(self):
+        """소녀의 히트박스 반환"""
+        left = self.x - self.width // 2
+        bottom = self.y - self.height // 2
+        right = self.x + self.width // 2
+        top = self.y + self.height // 2
+        return left, bottom, right, top
 

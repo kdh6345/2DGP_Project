@@ -3,6 +3,7 @@ from pico2d import *
 import game_framework
 import game_world
 from girl import Girl
+from item import Key
 from monster import Monster
 from stair import Stair
 from background import Background,Fence
@@ -18,26 +19,29 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global girl, background, transition_box, stairs, black_screen
+    global girl, background, transition_box, stairs, black_screen, key, fence
 
     # 기존 객체 제거
     game_world.clear()
     girl = Girl()  # 소녀 객체 생성
     girl.set_y_bounds(100, 200)  # rooftop에서의 y 좌표 제한
+    key = Key(300, 150)  # 키 위치 설정 (x=700, y=150)
 
     # 새로운 객체 생성
-    if open_jail==False:
-        background = Background('start room1.png', 800, 400)  # 옥상 배경 이미지
+    if not open_jail:
+        background = Background('start room1.png', 800, 400)  # 닫힌 Jail 배경
         girl.set_x_bounds(300, 550)
-    elif open_jail==True:
-        background = Background('start room2.png', 800, 400)  # 옥상 배경 이미지
+    else:
+        background = Background('start room2.png', 800, 400)  # 열린 Jail 배경
         girl.set_x_bounds(300, 1600)
 
-    fence=Fence()
-
-
+    fence = Fence()  # 철창 객체 생성
     transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
     black_screen = load_image('black.png')
+
+    if not open_jail:
+        key = Key(300, 150)  # 키 위치 설정
+        game_world.add_object(key, 1)
 
     # 계단 리스트 생성
     stairs = [
@@ -49,6 +53,7 @@ def enter():
 
     # game_world에 객체 추가
     game_world.add_object(background, 0)
+    game_world.add_object(key, 1)
 
     game_world.add_object(girl, 1)
     game_world.add_object(fence, 2)
@@ -60,10 +65,13 @@ def exit():
     del background
 
 def update():
-    global girl
+    global girl, key
 
-    # 소녀의 상태 업데이트
+    # 소녀와 키 상태 업데이트
     game_world.update()
+
+    # 키 업데이트 (소녀와의 충돌 처리)
+    key.update()
 
     # 소녀의 위치 확인 및 화면 전환
     if check_for_transition(girl):
@@ -80,6 +88,7 @@ def draw():
     update_canvas()
 
 def handle_events():
+    global girl, key
     events = get_events()
     for event in events:
         if event.type == SDL_QUIT:
@@ -87,7 +96,6 @@ def handle_events():
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
             game_framework.quit()
         else:
-            # girl과 stairs를 전역 변수로 사용
             girl.handle_event(event, stairs)
 
 def check_for_transition(girl):
