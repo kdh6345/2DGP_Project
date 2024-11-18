@@ -1,3 +1,4 @@
+#transition_box.py
 from pico2d import draw_rectangle
 
 class TransitionBox:

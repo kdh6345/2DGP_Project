@@ -1,6 +1,8 @@
+#girl.py
 from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_SPACE, SDLK_LEFT, SDLK_RIGHT
 from state_machine import *
 import game_world
+
 import game_framework
 
 class Idle:

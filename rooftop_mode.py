@@ -1,10 +1,11 @@
+#rooftop_mode.py
 from pico2d import *
 import game_framework
 import game_world
 from girl import Girl
 from monster import Monster
 from stair import Stair
-from background import Background
+from background import Background,Fence
 from transition_box import TransitionBox
 
 # 소녀의 초기 위치를 저장하는 변수
@@ -23,6 +24,7 @@ def enter():
 
     # 새로운 객체 생성
     background = Background('start room1.png', 800, 400)  # 옥상 배경 이미지
+    fence=Fence()
     girl = Girl()  # 소녀 객체 생성
     girl.set_y_bounds(100, 200)  # rooftop에서의 y 좌표 제한
     transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
@@ -39,7 +41,8 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
 
-    game_world.add_object(girl, 2)
+    game_world.add_object(girl, 1)
+    game_world.add_object(fence, 2)
     for stair in stairs:
         game_world.add_object(stair, 2)
 

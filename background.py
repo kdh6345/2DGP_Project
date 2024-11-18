@@ -20,7 +20,7 @@ class Background:
 class Fence:
     def __init__(self):
         self.image=load_image('fence.png')
-        self.x = 185  # 중심 x 좌표
+        self.x = 410  # 중심 x 좌표
         self.y = 210  # 중심 y 좌표
         self.width = 200  # 철창의 너비
         self.height = 100  # 철창의 높이
@@ -28,7 +28,7 @@ class Fence:
     def update(self):
         pass
     def draw(self):
-        self.image.draw(185,210,210,170)
+        self.image.draw(410,210,210,170)
         draw_rectangle(*self.get_bb())
 
     def get_bb(self):

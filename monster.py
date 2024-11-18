@@ -1,4 +1,3 @@
-#monster.py
 from pico2d import *
 import random
 import game_framework
@@ -20,12 +19,11 @@ class Idle:
 
     @staticmethod
     def do(monster):
-        # 프레임 처리
         frame_speed = 0.1
         monster.frame_time_accumulator += game_framework.frame_time
 
         if monster.frame_time_accumulator >= frame_speed:
-            monster.frame = (monster.frame + 1) % 7  # 7개의 프레임
+            monster.frame = (monster.frame + 1) % 7
             monster.frame_time_accumulator = 0
 
     @staticmethod
@@ -33,7 +31,7 @@ class Idle:
         frame_width = 3530 // 7
         frame_height = 500
         monster.image.clip_draw(monster.frame * frame_width, 0, frame_width, frame_height,
-                                monster.x, monster.y, 300, 400)
+                                monster.x, monster.y, 250, 250)
 
 
 class Patrol:
@@ -53,7 +51,7 @@ class Patrol:
         # x축 이동
         monster.x += monster.dir_x * monster.speed
 
-        # y축 이동은 계단 위에서만
+        # y축 이동 (계단 위에서만)
         if monster.is_on_any_stair():
             monster.y += monster.dir_y * monster.speed
         else:
@@ -62,6 +60,12 @@ class Patrol:
         # 경계 처리 (x축만 제한)
         if monster.x < 0 or monster.x > 1600:
             monster.dir_x *= -1
+
+        # TransitionBox 충돌 확인
+        transition_box = monster.check_transition_box()
+        if transition_box:
+            next_mode = transition_box.next_mode  # TransitionBox에 연결된 모드 가져오기
+            game_framework.change_mode(next_mode)
 
         # 프레임 처리
         frame_speed = 0.1
@@ -73,14 +77,15 @@ class Patrol:
 
     @staticmethod
     def draw(monster):
-        frame_width = 3530 // 7  # 각 프레임의 너비
-        frame_height = 500  # 이미지 높이
-        flip = 'h' if monster.dir_x > 0 else ''  # 왼쪽으로 이동 시 플립
+        frame_width = 3530 // 7
+        frame_height = 500
+        flip = 'h' if monster.dir_x > 0 else ''  # 이동 방향에 따라 플립
         monster.image.clip_composite_draw(monster.frame * frame_width, 0, frame_width, frame_height,
-                                          0, flip, monster.x, monster.y, 300, 400)
+                                          0, flip, monster.x, monster.y, 250, 250)
+
 
 class Monster:
-    def __init__(self, x, y,girl, stairs):
+    def __init__(self, x, y, girl, stairs):
         self.x = x
         self.y = y
         self.dir_x = 0
@@ -90,14 +95,16 @@ class Monster:
         self.frame_time_accumulator = 0
         self.image = load_image('monster_idle.png')
         self.state_machine = StateMachine(self)
-        self.stairs = stairs  # 계단 리스트
+        self.stairs = stairs
         self.transition_boxes = []  # TransitionBox 리스트
+        self.width = 200  # 몬스터의 너비
+        self.height = 200  # 몬스터의 높이
 
         # 상태 머신 초기화
         self.state_machine.start(Patrol)
         self.state_machine.set_transitions({
             Patrol: {
-                lambda monster: False: Idle  # 상태 전환 조건 (현재는 없음)
+                lambda monster: False: Idle  # 상태 전환 조건 없음 (임의 설정)
             },
             Idle: {
                 lambda monster: True: Patrol  # 항상 Patrol로 전환
@@ -133,23 +140,15 @@ class Monster:
         for transition_box in self.transition_boxes:
             box_left, box_bottom, box_right, box_top = transition_box.get_bb()
 
-            if (self.x + 50 > box_left and
-                self.x - 50 < box_right and
-                self.y + 50 > box_bottom and
-                self.y - 50 < box_top):
+            if (self.x + self.width // 2 > box_left and
+                self.x - self.width // 2 < box_right and
+                self.y + self.height // 2 > box_bottom and
+                self.y - self.height // 2 < box_top):
                 return transition_box
         return None
 
     def update(self):
-        # 상태 머신 업데이트
         self.state_machine.update()
-
-        # TransitionBox와의 충돌 확인
-        transition_box = self.check_transition_box()
-        if transition_box:
-            next_mode = transition_box.next_mode  # TransitionBox에 연결된 모드 가져오기
-            import game_framework
-            game_framework.change_mode(next_mode)
 
     def draw(self):
         self.state_machine.draw()

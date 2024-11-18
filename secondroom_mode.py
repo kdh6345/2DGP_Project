@@ -1,3 +1,4 @@
+#secondroom_mode.py
 from pico2d import *
 import game_framework
 import game_world
@@ -35,7 +36,7 @@ def enter():
     ]
     # 몬스터 리스트 생성
     monsters = [
-        Monster(800, 200, girl, stairs),  # 소녀를 타겟으로 하는 몬스터
+        Monster(100, 200, girl, stairs),  # 소녀를 타겟으로 하는 몬스터
     ]
 
 
