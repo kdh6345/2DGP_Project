@@ -1,3 +1,4 @@
+#monster.py
 from pico2d import *
 import random
 import game_framework
@@ -74,7 +75,7 @@ class Patrol:
     def draw(monster):
         frame_width = 3530 // 7  # 각 프레임의 너비
         frame_height = 500  # 이미지 높이
-        flip = 'h' if monster.dir_x < 0 else ''  # 왼쪽으로 이동 시 플립
+        flip = 'h' if monster.dir_x > 0 else ''  # 왼쪽으로 이동 시 플립
         monster.image.clip_composite_draw(monster.frame * frame_width, 0, frame_width, frame_height,
                                           0, flip, monster.x, monster.y, 300, 400)
 
