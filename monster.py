@@ -62,10 +62,10 @@ class Patrol:
             monster.dir_x *= -1
 
         # TransitionBox 충돌 확인
-        transition_box = monster.check_transition_box()
-        if transition_box:
-            next_mode = transition_box.next_mode  # TransitionBox에 연결된 모드 가져오기
-            game_framework.change_mode(next_mode)
+        #transition_box = monster.check_transition_box()
+        #if transition_box:
+        #    next_mode = transition_box.next_mode  # TransitionBox에 연결된 모드 가져오기
+        #    game_framework.change_mode(next_mode)
 
         # 프레임 처리
         frame_speed = 0.1

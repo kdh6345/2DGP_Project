@@ -269,11 +269,14 @@ class Girl:
     def pick_up_item(self, item):
         """소녀가 아이템을 들게 설정"""
         self.holding_item = item
+        self.holding_key=True
+
         print(f"Picked up {item.__class__.__name__}")
 
     def use_item_callback(self, item):
         """아이템을 사용할 때의 동작"""
         if isinstance(item, Key):  # 키를 사용했을 경우
+            self.holding_key = False
             import rooftop_mode
             rooftop_mode.open_jail = True
             print("Jail opened!")
