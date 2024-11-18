@@ -21,6 +21,7 @@ def enter():
     # 새로운 객체 생성
     background = Background('secondroom.png', 800, 400)  # 두 번째 방 배경 이미지
     girl = Girl()  # 소녀 객체 생성
+    girl.set_y_bounds(210, 700)  # secondroom에서의 y 좌표 제한
     # 전환 박스들 생성
     transition_boxes = [
         TransitionBox(850, 700, 50, 50),  # 첫 번째 박스
