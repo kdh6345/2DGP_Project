@@ -1,4 +1,5 @@
-from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_RETURN, SDLK_LEFT, SDLK_RIGHT, SDLK_c
+from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_RETURN, SDLK_LEFT, SDLK_RIGHT, SDLK_c, \
+    draw_rectangle
 
 from item import Key
 from state_machine import *
@@ -9,10 +10,13 @@ class UseItem:
     """아이템을 사용하는 상태"""
     @staticmethod
     def enter(girl, e):
-        if girl.holding_item:
+        if girl.holding_key:
             girl.use_item_callback(girl.holding_item)  # 아이템 사용 콜백 호출
             girl.holding_item = None  # 아이템 초기화
-
+        else:
+            girl.use_item_callback(girl.holding_key)  # 아이템 사용 콜백 호출
+            girl.holding_item = None  # 아이템 초기화
+            pass
     @staticmethod
     def exit(girl, e):
         pass
@@ -259,6 +263,7 @@ class Girl:
         self.state_machine.add_event(('INPUT', event))
 
     def draw(self):
+        draw_rectangle(*self.get_bb())  # 소녀의 히트박스를 화면에 표시
         self.state_machine.draw()
         if self.holding_key:
             # 키를 소녀의 오른손 위치에 그리기
@@ -280,12 +285,27 @@ class Girl:
             import rooftop_mode
             rooftop_mode.open_jail = True
             print("Jail opened!")
+        else:
+            print('cannot use item')
+            self.holding_key = False
+            import rooftop_mode
+            rooftop_mode.open_jail = False
+            print('nothing')
+
+            pass
 
     def get_bb(self):
         """소녀의 히트박스 반환"""
-        left = self.x - self.width // 2
-        bottom = self.y - self.height // 2
-        right = self.x + self.width // 2
-        top = self.y + self.height // 2
+        # 실제 스프라이트 크기에 맞게 히트박스 조정
+        left = self.x - 30  # 히트박스 크기 조정
+        bottom = self.y - 50
+        right = self.x + 30
+        top = self.y + 50
+
+        # 디버그 출력 추가
+        print(f"Girl position: ({self.x}, {self.y})")
+        print(f"Girl hitbox: ({left}, {bottom}, {right}, {top})")
+
         return left, bottom, right, top
+
 

@@ -1,18 +1,43 @@
 #game_world.py
 from girl import Girl
+from monster import Monster
 
 objects = [[] for _ in range(4)]
 girl = None  # 소녀 객체를 전역으로 관리
+monster=None
+current_mode = None  # 현재 게임 모드(방) 저장
 
 def add_object(o, depth=0):
+    global monster
     global girl
     if isinstance(o, Girl):  # Girl 객체라면 저장
         girl = o
     objects[depth].append(o)
 
+    if isinstance(o, Monster):  # Girl 객체라면 저장
+        monster = o
+    objects[depth].append(o)
+
+def get_monster():
+    global monster
+    return monster
+
+def set_monster(new_monster):
+    global monster
+    monster=new_monster
+
+def set_current_mode(mode_name):
+    global current_mode
+    current_mode = mode_name
+
 def get_girl():
     """소녀 객체를 반환"""
+    global girl
     return girl
+
+def set_girl(new_girl):
+    global girl
+    girl=new_girl
 
 def update():
     for layer in objects:

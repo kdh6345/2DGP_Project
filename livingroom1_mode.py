@@ -20,6 +20,7 @@ def enter():
     # 새로운 객체 생성
     background = Background('livingroom1.png', 800, 400)  # 홀 이미지 생성
     girl = Girl()  # 소녀 객체 생성
+    game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(200, 700)  # y 좌표 제한
     stairs=[]
 
@@ -32,8 +33,7 @@ def enter():
     ]
 
     # 몬스터 생성 (맵 내 자유롭게 돌아다니도록 설정)
-    monster = Monster(800, 250, girl)
-    #monster.set_transition_boxes(transition_boxes)
+
 
     black_screen = load_image('black.png')  # 검정 화면 배경
 
@@ -43,7 +43,8 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
-    game_world.add_object(monster, 1)
+    if game_world.get_monster():
+        game_world.add_object(game_world.get_monster(), 1)
 
 
 def exit():

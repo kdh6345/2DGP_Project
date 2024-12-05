@@ -20,6 +20,7 @@ def enter():
     # 새로운 객체 생성
     background = Background('bathroom.png', 800, 445)  # 화장실 배경 이미지
     girl = Girl()  # 소녀 객체 생성
+    game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     transition_box = TransitionBox(1600, 200, 100, 100)  # 전환 박스 생성
     black_screen = load_image('black.png')  # 검정 화면 배경
     stairs=[]
@@ -33,6 +34,8 @@ def enter():
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
     game_world.add_object(key, 1)
+    if game_world.get_monster():
+        game_world.add_object(game_world.get_monster(), 1)
 
 def exit():
     global background

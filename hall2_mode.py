@@ -20,6 +20,7 @@ def enter():
     # 새로운 객체 생성
     background = Background('upstair.png', 800, 400)  # hall2
     girl = Girl()  # 소녀 객체 생성
+    game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(100, 210)  # secondroom에서의 y 좌표 제한
     stairs=[
         Stair(150, 100, 300, 200, -50, 200) , # 계단 1개
@@ -38,6 +39,8 @@ def enter():
     girl.x, girl.y = girl_position
 
     # game_world에 객체 추가
+    if game_world.get_monster():
+        game_world.add_object(game_world.get_monster(), 1)
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
     for stair in stairs:

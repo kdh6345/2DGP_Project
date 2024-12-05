@@ -19,6 +19,7 @@ def enter():
     # 기존 객체 제거
     game_world.clear()
     girl = Girl()  # 소녀 객체 생성
+    game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(100, 200)  # rooftop에서의 y 좌표 제한
     girl.set_x_bounds(300, 1600)  # x 좌표 범위 확장
 
@@ -37,6 +38,8 @@ def enter():
     girl.x, girl.y = girl_position
 
     # game_world에 객체 추가
+    if game_world.get_monster():
+        game_world.add_object(game_world.get_monster(), 1)
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
     game_world.add_object(fence, 2)

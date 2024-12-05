@@ -1,6 +1,8 @@
 #game_framework.py
 import time
 
+import game_world
+
 running = True
 stack = []
 frame_time = 0.0  # 프레임 간 경과 시간
@@ -12,6 +14,7 @@ def change_mode(mode):
         stack.pop()
     stack.append(mode)
     mode.enter()
+    game_world.set_current_mode(mode.__name__)  # 모드 변경시 현재 모드 업데이트
 
 def push_mode(mode):
     global stack

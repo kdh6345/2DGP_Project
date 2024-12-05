@@ -20,6 +20,7 @@ def enter():
     # 새로운 객체 생성
     background = Background('livingroom2.png', 600, 400)  # 홀 이미지 생성
     girl = Girl()  # 소녀 객체 생성
+    game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(200, 200)  # y 좌표 제한
     girl.set_x_bounds(100, 1100)  # secondroom에서의 y 좌표 제한
     stairs=[]
@@ -44,7 +45,8 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
-    #game_world.add_object(monster, 1)
+    if game_world.get_monster():
+        game_world.add_object(game_world.get_monster(), 1)
 
 
 def exit():

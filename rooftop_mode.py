@@ -22,9 +22,18 @@ def enter():
     # 기존 객체 제거
     game_world.clear()
     girl = Girl()  # 소녀 객체 생성
+    game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(100, 200)  # rooftop에서의 y 좌표 제한
     girl.set_x_bounds(300, 550)  # 초기 Jail 범위
 
+    if game_world.get_monster() is None:
+        # 게임 시작시 최초 한 번만 몬스터 생성
+        monster = Monster(800, 250, girl)
+        game_world.set_monster(monster)
+
+        # 기존 몬스터 game_world에 추가
+    if game_world.get_monster():
+        game_world.add_object(game_world.get_monster(), 1)
     # 새로운 객체 생성
     background = Background('start room1.png', 800, 400)  # 닫힌 Jail 배경
     fence = Fence()

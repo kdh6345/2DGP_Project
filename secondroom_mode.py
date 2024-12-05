@@ -22,6 +22,7 @@ def enter():
     # 새로운 객체 생성
     background = Background('secondroom.png', 800, 400)  # 두 번째 방 배경 이미지
     girl = Girl()  # 소녀 객체 생성
+    game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(210, 700)  # secondroom에서의 y 좌표 제한
 
     # 전환 박스들 생성
@@ -36,10 +37,7 @@ def enter():
         Stair(850, 400, 100, 500, 200, 850)  # 계단 1개
     ]
 
-    # 몬스터 리스트 생성
-    monsters = [
-        Monster(100, 250, girl),  # 소녀를 타겟으로 하는 몬스터
-    ]
+
 
     # 소녀의 초기 위치 설정
     girl.x, girl.y = girl_position
@@ -49,8 +47,8 @@ def enter():
     game_world.add_object(girl, 1)
     for stair in stairs:
         game_world.add_object(stair, 2)
-    for monster in monsters:
-        game_world.add_object(monster, 1)
+    if game_world.get_monster():
+        game_world.add_object(game_world.get_monster(), 1)
 
 def exit():
     global background
