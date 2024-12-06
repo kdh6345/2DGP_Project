@@ -46,6 +46,7 @@ class Item:
         if item_top < obj_bottom or item_bottom > obj_top:
             return False
         return True
+
 class Key:
     """키 아이템 클래스"""
     def __init__(self, x, y):
@@ -70,6 +71,7 @@ class Key:
 
     def draw_at(self, x, y):
         """소녀가 들고 있을 때의 키 그리기"""
+        print('pickupupupup')
         self.image.draw(x, y, self.width, self.height)
 
     def get_bb(self):
@@ -135,3 +137,4 @@ class Key2:
         if item_top < obj_bottom or item_bottom > obj_top:
             return False
         return True
+

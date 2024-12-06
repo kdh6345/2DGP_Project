@@ -13,9 +13,13 @@ def set_girl_position(x, y):
 
 def enter():
     global background, girl, transition_box, black_screen,stairs,key
+    global run_shoes
 
     # 기존 객체 제거
     game_world.clear()
+
+
+
 
     # 새로운 객체 생성
     background = Background('bathroom.png', 800, 445)  # 화장실 배경 이미지

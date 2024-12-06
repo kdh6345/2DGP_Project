@@ -2,22 +2,30 @@ from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_RETURN, SD
     draw_rectangle
 
 import gameover_mode
-from item import Key
+from item import Key,Potion
 from state_machine import *
 import game_world
 import game_framework
+
+can_run = True  # 달리기 상태 해금 여부
 
 class UseItem:
     """아이템을 사용하는 상태"""
     @staticmethod
     def enter(girl, e):
-        if girl.holding_key:
+        if girl.holding_item:  # 아이템을 들고 있는 경우
             girl.use_item_callback(girl.holding_item)  # 아이템 사용 콜백 호출
             girl.holding_item = None  # 아이템 초기화
-        else:
+        elif girl.holding_key:  # 키를 들고 있는 경우
             girl.use_item_callback(girl.holding_key)  # 아이템 사용 콜백 호출
-            girl.holding_item = None  # 아이템 초기화
-            pass
+            girl.holding_key = None  # 키 초기화
+        else:
+            # 들고 있는 아이템이 없는 경우
+            print("No item to use.")
+
+        # 상태 전환 이벤트 추가
+        girl.state_machine.add_event(('TIME_OUT', None))
+
     @staticmethod
     def exit(girl, e):
         pass
@@ -28,14 +36,13 @@ class UseItem:
 
     @staticmethod
     def draw(girl):
-        # 소녀를 Idle 상태처럼 기본적으로 그리기
         frame_width = 1354 // 3  # Idle 스프라이트 한 프레임의 너비
         frame_height = 500  # Idle 스프라이트 높이
 
-        if girl.face_dir == 1:  # 오른쪽을 바라보는 경우
+        if girl.face_dir == 1:
             girl.idle_image.clip_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
                                       girl.x, girl.y, girl.width, girl.height)
-        else:  # 왼쪽을 바라보는 경우
+        else:
             girl.idle_image.clip_composite_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
                                                 0, 'h', girl.x, girl.y, girl.width, girl.height)
 
@@ -104,7 +111,7 @@ class Walk:
             girl.frame_time_accumulator = 0
 
         # 이동 처리
-        girl.x += girl.dir_x * 0.7  # X축 이동
+        girl.x += girl.dir_x * 1.0  # X축 이동
 
     @staticmethod
     def draw(girl):
@@ -188,38 +195,42 @@ class Hide:
         else:  # 왼쪽을 바라보는 경우
             girl.hide_image.clip_composite_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
                                                 0, 'h', girl.x, girl.y, girl.width, girl.height)
+
 class Run:
     @staticmethod
     def enter(girl, e):
-        if right_down(e):  # 오른쪽 이동
-            girl.dir_x, girl.face_dir = 1, 1
-        elif left_down(e):  # 왼쪽 이동
-            girl.dir_x, girl.face_dir = -1, -1
-
-        girl.frame_time_accumulator = 0  # Run 상태에서 프레임 시간 초기화
-        girl.speed = 2  # 달리기 속도 설정
+        print("Entered Run state")
+        girl.frame_time_accumulator = 0
+        girl.run_duration = 3.0  # 3초 동안 유지
+        girl.speed = 3.0  # 빠른 속도
+        girl.dir_x = girl.face_dir  # 바라보는 방향으로 이동
 
     @staticmethod
     def exit(girl, e):
-        girl.dir_x = 0  # 이동 멈춤
+        girl.dir_x = 0
+        girl.speed = 0
+        print("Exited Run state")
 
     @staticmethod
     def do(girl):
-        frame_speed = 0.05  # Run 상태에서 빠른 프레임 변경
+        global can_run
+        girl.run_duration -= game_framework.frame_time
+        if girl.run_duration <= 0:
+            girl.state_machine.add_event(('TIME_OUT', None))
+
+        girl.x += girl.dir_x * girl.speed
+        print(f"Running... New position: {girl.x}")
+
+        frame_speed = 0.05
         girl.frame_time_accumulator += game_framework.frame_time
-
         if girl.frame_time_accumulator >= frame_speed:
-            girl.frame = (girl.frame + 1) % 6  # Run 상태에서 6개의 프레임 반복
+            girl.frame = (girl.frame + 1) % 6
             girl.frame_time_accumulator = 0
-
-        # 이동 처리
-        girl.x += girl.dir_x * girl.speed  # X축 이동
 
     @staticmethod
     def draw(girl):
-        frame_width = 717  # 각 프레임의 너비
-        frame_height = 800  # 이미지 높이
-
+        frame_width = 717
+        frame_height = 800
         if girl.face_dir == 1:
             girl.image.clip_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
                                  girl.x, girl.y, girl.width, girl.height)
@@ -227,18 +238,7 @@ class Run:
             girl.image.clip_composite_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
                                            0, 'h', girl.x, girl.y, girl.width, girl.height)
 
-class RunShoes:
-    """달리기 상태를 해금하는 아이템"""
-    def __init__(self, x, y):
-        self.image = load_image('run_shoes.png')  # 아이템 이미지
-        self.x, self.y = x, y
-        self.width, self.height = 50, 50
 
-    def draw(self):
-        self.image.draw(self.x, self.y, self.width, self.height)
-
-    def get_bb(self):
-        return self.x - self.width // 2, self.y - self.height // 2, self.x + self.width // 2, self.y + self.height // 2
 
 
 class Girl:
@@ -259,8 +259,10 @@ class Girl:
         self.state_machine = StateMachine(self)
         self.y_min, self.y_max = None, None
         self.x_min, self.x_max = None, None  # x 좌표 제한 변수
+        self.is_space_pressed = False  # 스페이스바 입력 상태
 
-        self.can_run = False  # 달리기 상태 해금 여부
+        global can_run
+
         self.state_machine = StateMachine(self)
         self.holding_item = None
 
@@ -268,32 +270,42 @@ class Girl:
         self.state_machine.start(Idle)
         self.state_machine.set_transitions({
             Idle: {
-                right_down: Walk, left_down: Walk,
-                enter_down: Hide,  c_down: UseItem,
-                space_down: Run if self.can_run else Walk,
-                up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
+                right_down: Walk,  # 오른쪽 키를 누르면 Walk 상태로 전환
+                left_down: Walk,  # 왼쪽 키를 누르면 Walk 상태로 전환
+                space_down: Run if can_run else Walk,  # 달리기 가능하면 Run 상태로, 아니면 Walk
+                up_down: Climb,  # 위 키를 누르면 Climb 상태로 전환
+                down_down: Climb,  # 아래 키를 누르면 Climb 상태로 전환
+                enter_down: Hide,  # 숨기 상태로 전환
+                c_down: UseItem,  # UseItem 상태로 전환
             },
             Walk: {
-                right_down: Walk, left_down: Walk,
-                up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
-                right_up: Idle, left_up: Idle,
-                space_down: Run if self.can_run else Walk,
-                enter_down: Hide, c_down: UseItem, # space 키로 숨기 시작
-            },
-            Climb: {
-                up_up: Idle, down_up: Idle,  # 위/아래 키를 놓으면 Idle 상태로 전환
+                right_down: Walk,  # 오른쪽 키를 누른 상태 유지
+                left_down: Walk,  # 왼쪽 키를 누른 상태 유지
+                space_down: Run if can_run else Walk,  # 달리기 가능하면 Run 상태로
+                right_up: Idle,  # 오른쪽 키를 떼면 Idle 상태로
+                left_up: Idle,  # 왼쪽 키를 떼면 Idle 상태로
+                up_down: Climb,  # 위 키를 누르면 Climb 상태로 전환
+                down_down: Climb,  # 아래 키를 누르면 Climb 상태로 전환
+                enter_down: Hide,  # 숨기 상태로 전환
+                c_down: UseItem,  # UseItem 상태로 전환
             },
             Run: {
-                right_up: Idle, left_up: Idle,
+                time_out: Idle,  # 3초가 지나면 Idle 상태로 전환
+                right_up: Idle,  # 오른쪽 키를 떼면 Idle 상태로 전환
+                left_up: Idle,  # 왼쪽 키를 떼면 Idle 상태로 전환
+            },
+            Climb: {
+                up_up: Idle,  # 위 키를 떼면 Idle 상태로 전환
+                down_up: Idle,  # 아래 키를 떼면 Idle 상태로 전환
             },
             Hide: {
-                up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
-                enter_up: Idle,  # space 키를 떼면 숨기 종료
-                c_down: UseItem,
-
+                up_down: Climb,  # 위 키를 누르면 Climb 상태로 전환
+                down_down: Climb,  # 아래 키를 누르면 Climb 상태로 전환
+                enter_up: Idle,  # 숨기에서 Idle 상태로 전환
+                c_down: UseItem,  # UseItem 상태로 전환
             },
             UseItem: {
-                start_event: Idle,  # UseItem 상태에서 다시 Idle로 전환
+                time_out: Idle,  # UseItem 상태에서 일정 시간이 지나면 Idle 상태로 전환
             },
         })
 
@@ -323,6 +335,9 @@ class Girl:
             self.x = self.x_max
 
     def handle_event(self, event, stairs):
+        if event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
+            self.state_machine.add_event(('SPACE_DOWN', None))  # 스페이스바 이벤트 추가
+
         self.state_machine.add_event(('INPUT', event))
 
     def draw(self):
@@ -339,9 +354,6 @@ class Girl:
         self.holding_item = item
         self.holding_key=True
 
-        if isinstance(item, RunShoes):
-            self.can_run = True  # 달리기 상태 해금
-            print("Run state unlocked!")
 
         print(f"Picked up {item.__class__.__name__}")
 

@@ -7,6 +7,7 @@ from game_framework import draw_room_name
 from girl import Girl
 from background import Background
 from monster import Monster
+from obstacle import Obstacle
 from transition_box import TransitionBox
 from stair import Stair
 
@@ -41,6 +42,7 @@ def enter():
         Stair(850, 400, 100, 500, 200, 850)  # 계단 1개
     ]
 
+
     # 저장된 몬스터 위치 확인
     monster_position = game_world.get_monster_position_for_room('rooftop')
     if monster_position:
@@ -56,7 +58,8 @@ def enter():
 
     # game_world에 객체 추가
     game_world.add_object(background, 0)
-    game_world.add_object(girl, 1)
+    game_world.add_object(girl, 3)
+
     for stair in stairs:
         game_world.add_object(stair, 2)
 
@@ -97,6 +100,8 @@ def draw():
     game_world.render()
     game_framework.draw_room_name()
     # 각 TransitionBox의 히트박스 그리기
+
+
     for transition_box in transition_boxes:
         transition_box.draw()
     update_canvas()
