@@ -7,6 +7,7 @@ from monster import Monster
 from stair import Stair
 from background import Background, Fence
 from transition_box import TransitionBox
+from game_framework import set_room_name
 
 # 소녀의 초기 위치를 저장하는 변수
 girl_position = (400, 200)
@@ -17,7 +18,7 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global girl, background, transition_box, stairs, black_screen, key, fence
+    global girl, background, transition_box, stairs, black_screen, key, fence,monster
 
     # 기존 객체 제거
     game_world.clear()
@@ -26,16 +27,10 @@ def enter():
     girl.set_y_bounds(100, 200)  # rooftop에서의 y 좌표 제한
     girl.set_x_bounds(300, 550)  # 초기 Jail 범위
 
-    if game_world.get_monster() is None:
-        # 게임 시작시 최초 한 번만 몬스터 생성
-        monster = Monster(800, 250, girl)
-        game_world.set_monster(monster)
 
-        # 기존 몬스터 game_world에 추가
-    if game_world.get_monster():
-        game_world.add_object(game_world.get_monster(), 1)
     # 새로운 객체 생성
     background = Background('start room1.png', 800, 400)  # 닫힌 Jail 배경
+    set_room_name("Rooftop")  # 방 이름과 표시 시간 설정
     fence = Fence()
     key = Key(300, 150)  # 키 위치 설정
     transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
@@ -45,6 +40,8 @@ def enter():
     stairs = [
         Stair(1050, 200, 100, 200, -50, 200)  # 계단 1개
     ]
+
+
 
     # 소녀의 초기 위치 설정
     girl.x, girl.y = girl_position
@@ -85,6 +82,9 @@ def draw():
     black_screen.draw(800, 400, 1600, 800)  # 배경 그리기
     game_world.render()
     transition_box.draw()  # 전환 박스 그리기
+    # 방 이름 그리기
+    game_framework.draw_room_name()
+
     update_canvas()
 
 def handle_events():

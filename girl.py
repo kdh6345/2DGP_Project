@@ -1,6 +1,7 @@
 from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_RETURN, SDLK_LEFT, SDLK_RIGHT, SDLK_c, \
     draw_rectangle
 
+import gameover_mode
 from item import Key
 from state_machine import *
 import game_world
@@ -103,7 +104,7 @@ class Walk:
             girl.frame_time_accumulator = 0
 
         # 이동 처리
-        girl.x += girl.dir_x * 1  # X축 이동
+        girl.x += girl.dir_x * 0.7  # X축 이동
 
     @staticmethod
     def draw(girl):
@@ -187,6 +188,59 @@ class Hide:
         else:  # 왼쪽을 바라보는 경우
             girl.hide_image.clip_composite_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
                                                 0, 'h', girl.x, girl.y, girl.width, girl.height)
+class Run:
+    @staticmethod
+    def enter(girl, e):
+        if right_down(e):  # 오른쪽 이동
+            girl.dir_x, girl.face_dir = 1, 1
+        elif left_down(e):  # 왼쪽 이동
+            girl.dir_x, girl.face_dir = -1, -1
+
+        girl.frame_time_accumulator = 0  # Run 상태에서 프레임 시간 초기화
+        girl.speed = 2  # 달리기 속도 설정
+
+    @staticmethod
+    def exit(girl, e):
+        girl.dir_x = 0  # 이동 멈춤
+
+    @staticmethod
+    def do(girl):
+        frame_speed = 0.05  # Run 상태에서 빠른 프레임 변경
+        girl.frame_time_accumulator += game_framework.frame_time
+
+        if girl.frame_time_accumulator >= frame_speed:
+            girl.frame = (girl.frame + 1) % 6  # Run 상태에서 6개의 프레임 반복
+            girl.frame_time_accumulator = 0
+
+        # 이동 처리
+        girl.x += girl.dir_x * girl.speed  # X축 이동
+
+    @staticmethod
+    def draw(girl):
+        frame_width = 717  # 각 프레임의 너비
+        frame_height = 800  # 이미지 높이
+
+        if girl.face_dir == 1:
+            girl.image.clip_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
+                                 girl.x, girl.y, girl.width, girl.height)
+        else:
+            girl.image.clip_composite_draw(int(girl.frame) * frame_width, 0, frame_width, frame_height,
+                                           0, 'h', girl.x, girl.y, girl.width, girl.height)
+
+class RunShoes:
+    """달리기 상태를 해금하는 아이템"""
+    def __init__(self, x, y):
+        self.image = load_image('run_shoes.png')  # 아이템 이미지
+        self.x, self.y = x, y
+        self.width, self.height = 50, 50
+
+    def draw(self):
+        self.image.draw(self.x, self.y, self.width, self.height)
+
+    def get_bb(self):
+        return self.x - self.width // 2, self.y - self.height // 2, self.x + self.width // 2, self.y + self.height // 2
+
+
 class Girl:
     def __init__(self):
         self.x, self.y = 400, 200  # 초기 위치
@@ -206,22 +260,31 @@ class Girl:
         self.y_min, self.y_max = None, None
         self.x_min, self.x_max = None, None  # x 좌표 제한 변수
 
+        self.can_run = False  # 달리기 상태 해금 여부
+        self.state_machine = StateMachine(self)
+        self.holding_item = None
+
         # 상태 머신 초기화
         self.state_machine.start(Idle)
         self.state_machine.set_transitions({
             Idle: {
                 right_down: Walk, left_down: Walk,
                 enter_down: Hide,  c_down: UseItem,
+                space_down: Run if self.can_run else Walk,
                 up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
             },
             Walk: {
                 right_down: Walk, left_down: Walk,
                 up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
                 right_up: Idle, left_up: Idle,
+                space_down: Run if self.can_run else Walk,
                 enter_down: Hide, c_down: UseItem, # space 키로 숨기 시작
             },
             Climb: {
                 up_up: Idle, down_up: Idle,  # 위/아래 키를 놓으면 Idle 상태로 전환
+            },
+            Run: {
+                right_up: Idle, left_up: Idle,
             },
             Hide: {
                 up_down: Climb, down_down: Climb,  # 계단 위에서만 Climb 상태로 전환
@@ -276,6 +339,10 @@ class Girl:
         self.holding_item = item
         self.holding_key=True
 
+        if isinstance(item, RunShoes):
+            self.can_run = True  # 달리기 상태 해금
+            print("Run state unlocked!")
+
         print(f"Picked up {item.__class__.__name__}")
 
     def use_item_callback(self, item):
@@ -302,10 +369,14 @@ class Girl:
         right = self.x + 30
         top = self.y + 50
 
-        # 디버그 출력 추가
-        print(f"Girl position: ({self.x}, {self.y})")
-        print(f"Girl hitbox: ({left}, {bottom}, {right}, {top})")
 
         return left, bottom, right, top
+
+    def die(self):
+        """소녀 사망 처리"""
+        print("The girl has died!")
+        import gameover_mode
+        game_framework.change_mode(gameover_mode.gameover_state)  # 객체를 전달
+
 
 

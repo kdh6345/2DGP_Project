@@ -6,6 +6,7 @@ from girl import Girl
 from background import Background
 from transition_box import TransitionBox
 from stair import Stair
+from monster import Monster
 
 def set_girl_position(x, y):
     global girl_position
@@ -34,13 +35,13 @@ def enter():
         TransitionBox(1500, 100, 150, 10)    # 세 번째 전환 박스
     ]
     black_screen = load_image('black.png')  # 검정 화면 배경
+    game_framework.set_room_name("hall 2")
 
     # 소녀 초기 위치
     girl.x, girl.y = girl_position
 
     # game_world에 객체 추가
-    if game_world.get_monster():
-        game_world.add_object(game_world.get_monster(), 1)
+
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
     for stair in stairs:
@@ -49,6 +50,7 @@ def enter():
 def exit():
     global background
     del background
+
 
 def update():
     # 소녀 및 게임 월드 업데이트
@@ -75,6 +77,7 @@ def draw():
     clear_canvas()
     black_screen.draw(800, 400, 1600, 800)  # 전체 화면에 검정 배경
     game_world.render()
+    game_framework.draw_room_name()
     # 각 TransitionBox의 히트박스 그리기
     for transition_box in transition_boxes:
         transition_box.draw()

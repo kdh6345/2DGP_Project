@@ -38,16 +38,13 @@ def enter():
     #monster.set_transition_boxes(transition_boxes)
 
     black_screen = load_image('black.png')  # 검정 화면 배경
-
+    game_framework.set_room_name("living room")
     # 소녀 초기 위치
     girl.x, girl.y = girl_position
 
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
-    if game_world.get_monster():
-        game_world.add_object(game_world.get_monster(), 1)
-
 
 def exit():
     global background
@@ -90,6 +87,7 @@ def draw():
     clear_canvas()
     black_screen.draw(800, 400, 1600, 800)  # 검정 배경
     game_world.render()
+    game_framework.draw_room_name()
     for transition_box in transition_boxes:
         transition_box.draw()
     update_canvas()

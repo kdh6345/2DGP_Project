@@ -1,6 +1,9 @@
+#secondroom_mode.py
+
 from pico2d import *
 import game_framework
 import game_world
+from game_framework import draw_room_name
 from girl import Girl
 from background import Background
 from monster import Monster
@@ -14,7 +17,7 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_boxes, black_screen, stairs, monsters
+    global background, girl, transition_boxes, black_screen, stairs, monster
 
     # 기존 객체 제거
     game_world.clear()
@@ -32,12 +35,21 @@ def enter():
         TransitionBox(1600, 200, 50, 50)  # 세 번째 박스
     ]
     black_screen = load_image('black.png')
+    game_framework.set_room_name("room 1")
 
     stairs = [
         Stair(850, 400, 100, 500, 200, 850)  # 계단 1개
     ]
 
+    # 저장된 몬스터 위치 확인
+    monster_position = game_world.get_monster_position_for_room('rooftop')
+    if monster_position:
+        monster = Monster(*monster_position, girl)
+    else:
+        monster = Monster(800, 260, girl)  # 기본 위치
 
+    game_world.set_monster_for_room('rooftop', monster)
+    game_world.add_object(monster, 1)
 
     # 소녀의 초기 위치 설정
     girl.x, girl.y = girl_position
@@ -47,12 +59,16 @@ def enter():
     game_world.add_object(girl, 1)
     for stair in stairs:
         game_world.add_object(stair, 2)
-    if game_world.get_monster():
-        game_world.add_object(game_world.get_monster(), 1)
+
 
 def exit():
     global background
     del background
+    global monster
+    if monster:  # 몬스터가 존재하면 위치 저장
+        game_world.set_monster_position_for_room('rooftop', (monster.x, monster.y))
+        game_world.remove_monster_for_room('rooftop')
+        del monster
 
 def update():
     # 게임 월드 업데이트
@@ -79,6 +95,7 @@ def draw():
     clear_canvas()
     black_screen.draw(800, 400, 1600, 800)
     game_world.render()
+    game_framework.draw_room_name()
     # 각 TransitionBox의 히트박스 그리기
     for transition_box in transition_boxes:
         transition_box.draw()

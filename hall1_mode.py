@@ -35,14 +35,18 @@ def enter():
         TransitionBox(1600, 200, 20, 100)
     ]
 
-    if game_world.get_monster() is None:
-        monster = Monster(800, 250, girl)
-        game_world.set_monster(monster)
+    # 몬스터 생성
+    monster_position = game_world.get_monster_position_for_room('hall2')
+    if monster_position:
+        monster = Monster(*monster_position, girl)
+    else:
+        monster = Monster(800, 250, girl)  # 몬스터 초기 위치
+    game_world.set_monster_for_room('hall2', monster)
+    game_world.add_object(monster, 1)
 
-    if game_world.get_monster():
-        game_world.add_object(game_world.get_monster(), 1)
 
     black_screen = load_image('black.png')  # 검정 화면 배경
+    game_framework.set_room_name("hall 1")
 
     # 소녀 초기 위치
     girl.x, girl.y = girl_position
@@ -57,6 +61,12 @@ def enter():
 def exit():
     global background
     del background
+
+    global monster
+    if monster:
+        game_world.set_monster_position_for_room('hall2', (monster.x, monster.y))
+        game_world.remove_monster_for_room('hall2')
+        del monster
 
 def update():
     # 소녀와 몬스터 업데이트
@@ -89,6 +99,7 @@ def draw():
     clear_canvas()
     black_screen.draw(800, 400, 1600, 800)  # 검정 배경
     game_world.render()
+    game_framework.draw_room_name()
     for transition_box in transition_boxes:
         transition_box.draw()
     update_canvas()

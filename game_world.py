@@ -4,27 +4,37 @@ from monster import Monster
 
 objects = [[] for _ in range(4)]
 girl = None  # 소녀 객체를 전역으로 관리
-monster=None
+monsters = {}  # 방별로 몬스터를 저장하는 딕셔너리
+monster_positions = {}  # 방별 몬스터 위치 저장
+
 current_mode = None  # 현재 게임 모드(방) 저장
 
 def add_object(o, depth=0):
-    global monster
+
     global girl
     if isinstance(o, Girl):  # Girl 객체라면 저장
         girl = o
     objects[depth].append(o)
 
-    if isinstance(o, Monster):  # Girl 객체라면 저장
-        monster = o
-    objects[depth].append(o)
+def set_monster_for_room(room_name, monster):
+    """특정 방에 몬스터를 설정"""
+    monsters[room_name] = monster
 
-def get_monster():
-    global monster
-    return monster
+def get_monster_for_room(room_name):
+    """특정 방에 설정된 몬스터를 반환"""
+    return monsters.get(room_name)
 
-def set_monster(new_monster):
-    global monster
-    monster=new_monster
+def remove_monster_for_room(room_name):
+    """특정 방에서 몬스터를 제거"""
+    if room_name in monsters:
+        del monsters[room_name]
+def set_monster_position_for_room(room_name, position):
+    """특정 방의 몬스터 위치를 저장"""
+    monster_positions[room_name] = position
+
+def get_monster_position_for_room(room_name):
+    """특정 방의 몬스터 위치를 반환"""
+    return monster_positions.get(room_name, None)
 
 def set_current_mode(mode_name):
     global current_mode

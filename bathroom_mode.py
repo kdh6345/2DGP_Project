@@ -23,9 +23,11 @@ def enter():
     game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     transition_box = TransitionBox(1600, 200, 100, 100)  # 전환 박스 생성
     black_screen = load_image('black.png')  # 검정 화면 배경
+    game_framework.set_room_name("bathroom")
     stairs=[]
+
     girl.set_y_bounds(210, 250)  # secondroom에서의 y 좌표 제한
-    key = Key2(560, 300)  # 키 위치 설정
+    #key = Key2(560, 300)  # 키 위치 설정
 
     # 소녀 초기 위치
     girl.x, girl.y = girl_position  # 전환 박스 밖
@@ -33,9 +35,8 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
-    game_world.add_object(key, 1)
-    if game_world.get_monster():
-        game_world.add_object(game_world.get_monster(), 1)
+    #game_world.add_object(key, 1)
+
 
 def exit():
     global background
@@ -57,6 +58,7 @@ def draw():
     clear_canvas()
     black_screen.draw(800, 400, 1600, 800)  # 전체 화면에 검정 배경
     game_world.render()
+    game_framework.draw_room_name()
     # TransitionBox의 히트박스 그리기
     transition_box.draw()
     update_canvas()

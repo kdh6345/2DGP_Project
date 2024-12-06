@@ -25,6 +25,7 @@ def enter():
 
     # 새로운 객체 생성
     background = Background('start room2.png', 800, 400)  # 열린 Jail 배경
+    game_framework.set_room_name("Rooftop")
     fence = Fence()
     transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
     black_screen = load_image('black.png')
@@ -38,8 +39,7 @@ def enter():
     girl.x, girl.y = girl_position
 
     # game_world에 객체 추가
-    if game_world.get_monster():
-        game_world.add_object(game_world.get_monster(), 1)
+
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
     game_world.add_object(fence, 2)
@@ -68,6 +68,7 @@ def draw():
     black_screen.draw(800, 400, 1600, 800)  # 배경 그리기
     game_world.render()
     transition_box.draw()  # 전환 박스 그리기
+    game_framework.draw_room_name()
     update_canvas()
 
 def handle_events():
