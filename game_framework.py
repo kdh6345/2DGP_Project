@@ -1,6 +1,6 @@
 #game_framework.py
 import time
-from pico2d import load_font
+from pico2d import load_font, load_music
 import game_world
 
 running = True
@@ -16,6 +16,19 @@ sent_message = None
 sent_message_timer = 0  # 메시지 표시 시간
 sent_message_duration = 0  # 메시지 지속 시간
 
+bgm = None  # 전역 BGM 변수
+
+def init_bgm():
+    global bgm
+    if bgm is None:  # BGM이 초기화되지 않았을 때만 로드
+        bgm = load_music('backgroundmusic.mp3')
+        bgm.set_volume(32)
+        bgm.repeat_play()  # 반복 재생
+
+def stop_bgm():
+    global bgm
+    if bgm:
+        bgm.stop()  # BGM 정지
 
 def set_room_name(name, duration=2.0):
     """방 이름과 표시 시간을 설정"""
