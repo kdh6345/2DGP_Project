@@ -16,9 +16,12 @@ class UseItem:
         if girl.holding_item:  # 아이템을 들고 있는 경우
             girl.use_item_callback(girl.holding_item)  # 아이템 사용 콜백 호출
             girl.holding_item = None  # 아이템 초기화
-        elif girl.holding_key:  # 키를 들고 있는 경우
-            girl.use_item_callback(girl.holding_key)  # 아이템 사용 콜백 호출
-            girl.holding_key = None  # 키 초기화
+        if isinstance(girl.holding_item, Potion):  # 포션 사용
+            girl.holding_item.fire(girl.x, girl.y, girl.face_dir)
+            game_world.clear_potion_state()  # 포션 상태 초기화
+            girl.holding_item = None  # 포션 사용 후 초기화
+
+
         else:
             # 들고 있는 아이템이 없는 경우
             print("No item to use.")
@@ -255,7 +258,8 @@ class Girl:
         self.key_image = load_image('key.png')  # 키 이미지 추가
         self.width = 120
         self.height = 120
-        self.holding_key = False  # 키를 쥐고 있는 상태 여부
+
+
         self.state_machine = StateMachine(self)
         self.y_min, self.y_max = None, None
         self.x_min, self.x_max = None, None  # x 좌표 제한 변수
@@ -309,6 +313,10 @@ class Girl:
             },
         })
 
+    def is_in_state(self, state_name):
+        """소녀가 특정 상태에 있는지 확인"""
+        return self.state_machine.cur_state.__class__.__name__ == state_name
+
     def set_y_bounds(self, y_min, y_max):
         """y 좌표의 최소값과 최대값 설정"""
         self.y_min = y_min
@@ -321,6 +329,9 @@ class Girl:
 
     def update(self):
         self.state_machine.update()
+        if self.holding_item:
+            self.holding_item.x = self.x + (30 if self.face_dir == 1 else -30)
+            self.holding_item.y = self.y
 
         # y 값 제한 적용
         if self.y_min is not None and self.y < self.y_min:
@@ -343,35 +354,53 @@ class Girl:
     def draw(self):
         draw_rectangle(*self.get_bb())  # 소녀의 히트박스를 화면에 표시
         self.state_machine.draw()
-        if self.holding_key:
-            # 키를 소녀의 오른손 위치에 그리기
-            key_offset_x = 30 if self.face_dir == 1 else -30
-            key_offset_y = 50
-            self.key_image.draw(self.x + key_offset_x, self.y  , 40, 40)
+        if self.holding_item:  # 아이템을 들고 있을 때
+            offset_x = 30 if self.face_dir == 1 else -30
+            self.holding_item.draw_at(self.x + offset_x, self.y)
 
     def pick_up_item(self, item):
         """소녀가 아이템을 들게 설정"""
         self.holding_item = item
-        self.holding_key=True
-
-
+        game_world.save_girl_holding_item(item)  # game_world에 상태 저장
         print(f"Picked up {item.__class__.__name__}")
 
     def use_item_callback(self, item):
         """아이템을 사용할 때의 동작"""
         if isinstance(item, Key):  # 키를 사용했을 경우
-            self.holding_key = False
+            # 키를 사용하면 상태 제거
+            print("Using Key!")
+            self.holding_item = None
+            game_world.remove_item(item)  # `game_world`에서도 제거
             import rooftop_mode
             rooftop_mode.open_jail = True
-            print("Jail opened!")
-        else:
-            print('cannot use item')
-            self.holding_key = False
-            import rooftop_mode
-            rooftop_mode.open_jail = False
-            print('nothing')
 
-            pass
+        global potion_used
+
+        if isinstance(item, Potion):  # 포션 사용
+
+            print("Using Potion!")
+
+            direction = 1 if self.face_dir == 1 else -1  # 소녀가 바라보는 방향으로 발사
+
+            item.fire(self.x + (50 * direction), self.y, direction)  # 소녀의 앞에서 발사
+
+            game_world.add_object(item, 1)  # 발사된 포션을 게임 월드에 추가
+
+            self.holding_item = None  # 포션 사용 후 손에서 제거
+
+            potion_used = True  # 포션 사용 상태를 True로 설정
+
+        else:
+
+            print("Cannot use this item.")
+
+    def set_holding_item(self, item):
+        """들고 있는 아이템 설정"""
+        self.holding_item = item
+
+    def get_holding_item(self):
+        """들고 있는 아이템 반환"""
+        return self.holding_item
 
     def get_bb(self):
         """소녀의 히트박스 반환"""

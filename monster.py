@@ -1,10 +1,12 @@
 from pico2d import *
 import random
-
+import game_world
 import game_framework
 from girl import *
 
 class Monster:
+    id_counter = 0  # 고유 ID를 위한 클래스 변수
+
     def __init__(self, x, y, girl):
         self.x = x
         self.y = y
@@ -16,13 +18,18 @@ class Monster:
         self.image = load_image('monster_idle.png')
         self.chase_image = load_image('monster_chase.png')
         self.sniff_image = load_image('monster_finding.png')  # 킁킁거리는 상태 이미지 추가
-
+        self.dead_image = load_image('monster_dead.png')  # 죽는 애니메이션 이미지
         self.girl = girl
         self.width = 200
         self.height = 200
         self.detection_rangex = 200
         self.detection_rangey = 100
         self.is_detecting = False
+        self.monster_id = Monster.id_counter  # 고유 ID 부여
+        Monster.id_counter += 1  # 다음 몬스터를 위해 ID 증가
+
+        self.dying_time = 0  # 죽는 상태 경과 시간
+        self.is_dying = False  # 몬스터가 죽는 중인지 여부
 
         self.sniff_timer = 0  # 킁킁 상태로 전환을 위한 타이머
         self.sniff_duration = 2.0  # 킁킁 상태 지속 시간
@@ -32,8 +39,8 @@ class Monster:
 
     def is_girl_in_detection(self):
         """소녀가 감지 범위 내에 있는지 확인"""
-        if isinstance(self.girl.state_machine.cur_state, Hide):
-            print("Girl is in Hide state. Not detecting.")
+        if self.girl.is_in_state('Hide'):
+            print("Girl is hiding. Not detecting.")
             return False
 
         if self.girl.action == 4:
@@ -66,8 +73,21 @@ class Monster:
         top = self.y + self.detection_rangey
         return left, bottom, right, top
 
+    def get_bb(self):
+        """몬스터의 히트박스 반환"""
+        left = self.x - self.width // 2
+        bottom = self.y - self.height // 2
+        right = self.x + self.width // 2
+        top = self.y + self.height // 2
+        return left, bottom, right, top
+
     def update(self):
         self.is_detecting = self.is_girl_in_detection()
+
+        if self.is_dying:
+            self.dying_time += game_framework.frame_time
+            if self.dying_time >= 0.5:  # 1초가 경과하면 제거
+                game_world.remove_object(self)
 
         # 킁킁 상태로 전환 조건
         if self.current_state == Patrol:
@@ -86,8 +106,26 @@ class Monster:
         self.current_state.do(self)
 
     def draw(self):
-        self.current_state.draw(self)
-        draw_rectangle(*self.get_detection_bb())  # 감지 히트박스 시각화
+        if self.is_dying:
+            # 죽는 애니메이션
+            frame_width = 3025 // 6  # 이미지의 총 너비 / 프레임 수
+            frame_height = 500
+            self.frame = int(self.dying_time * 6) % 6  # 시간에 따라 프레임 변경
+
+            if self.dir_x == -1:  # 오른쪽을 바라보는 경우
+                self.dead_image.clip_draw(
+                    self.frame * frame_width, 0, frame_width, frame_height,
+                    self.x, self.y, 250, 250
+                )
+            elif self.dir_x==1:  # 왼쪽을 바라보는 경우 (플립)
+                self.dead_image.clip_composite_draw(
+                    self.frame * frame_width, 0, frame_width, frame_height,
+                    0, 'h', self.x, self.y,
+                    250,250
+                )
+        else:
+            self.current_state.draw(self)
+            draw_rectangle(*self.get_detection_bb())  # 감지 히트박스 시각화
 
     def change_state(self, new_state):
         """상태 변경 처리"""
@@ -95,6 +133,18 @@ class Monster:
             self.current_state.exit(self)
         self.current_state = new_state
         self.current_state.enter(self)
+
+    def die(self):
+        """몬스터가 죽을 때의 동작"""
+        if not self.is_dying:
+            self.is_dying = True
+            self.dying_time = 0  # 죽는 상태 초기화
+            print(f"Monster at ({self.x}, {self.y}) started dying!")
+            # 포션 사용 상태를 True로 설정
+        import game_world
+        game_world.mark_item_used(1)  # 포션 ID = 1
+        import secondroom_mode
+        secondroom_mode.potion_used = True  # secondroom_mode의 potion_used 상태 변경
 
 
 class Patrol:

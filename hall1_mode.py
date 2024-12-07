@@ -36,9 +36,9 @@ def enter():
     ]
 
     # 몬스터 생성
-    monster_position = game_world.get_monster_position_for_room('hall2')
+    monster_position = game_world.get_monster_position_for_room('hall1')
     if monster_position:
-        monster = Monster(*monster_position, girl)
+        monster = Monster(*monster_position, girl,2)
     else:
         monster = Monster(800, 250, girl)  # 몬스터 초기 위치
     game_world.set_monster_for_room('hall2', monster)

@@ -4,27 +4,32 @@ import game_framework
 import game_world
 from girl import Girl
 from background import Background
-from item import Key2
+from monster import Monster
 from transition_box import TransitionBox
+from item import Potion
 
 def set_girl_position(x, y):
     global girl_position
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_box, black_screen,stairs,key
-    global run_shoes
+    global background, girl, transition_box, black_screen,stairs,key, potion
 
     # 기존 객체 제거
     game_world.clear()
 
-
-
-
     # 새로운 객체 생성
     background = Background('bathroom.png', 800, 445)  # 화장실 배경 이미지
     girl = Girl()  # 소녀 객체 생성
-    game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
+    game_world.set_girl(girl)
+
+    # 포션 상태 확인 및 복원
+    if not game_world.is_item_picked(1):  # 아이템 ID 1인 포션이 습득되지 않았다면 생성
+        potion = Potion(550, 200, 1)  # 포션 생성 (ID = 1)
+        game_world.add_object(potion, 1)  # 포션을 게임 월드에 추가
+    else:
+        potion = None  # 이미 습득된 경우 포션을 생성하지 않음
+
     transition_box = TransitionBox(1600, 200, 100, 100)  # 전환 박스 생성
     black_screen = load_image('black.png')  # 검정 화면 배경
     game_framework.set_room_name("bathroom")
@@ -39,16 +44,30 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
+    #game_world.add_object(potion, 1)  # 포션 추가
     #game_world.add_object(key, 1)
 
 
 def exit():
-    global background
+    global background,potion
     del background
+
+    # 포션 상태 저장
+    if potion and potion.picked_up:
+        game_world.mark_item_picked(1)  # 포션의 ID를 사용된 상태로 기록
+        potion = None
+
 
 def update():
     # 소녀 및 게임 월드 업데이트
     game_world.update()
+
+    global potion
+    # 포션 상태 업데이트 및 제거 처리
+    if potion and potion.throwing and (potion.x < 0 or potion.x > 1600):  # 화면 밖으로 나가면
+        print("Potion went out of bounds and is removed.")
+        game_world.remove_object(potion)
+        potion = None
 
     # 소녀의 위치 확인 및 화면 전환
     if check_for_transition(girl, transition_box):
@@ -63,6 +82,8 @@ def draw():
     black_screen.draw(800, 400, 1600, 800)  # 전체 화면에 검정 배경
     game_world.render()
     game_framework.draw_room_name()
+    if potion and not potion.picked_up:  # 포션이 습득되지 않은 경우만 그리기
+        potion.draw()
     # TransitionBox의 히트박스 그리기
     transition_box.draw()
     update_canvas()
