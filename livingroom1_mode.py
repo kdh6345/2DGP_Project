@@ -71,6 +71,9 @@ def draw():
     black_screen.draw(800, 400, 1600, 800)  # 검정 배경
     game_world.render()
     game_framework.draw_room_name()
+    # 하트가 수집된 상태라면 화면 특정 위치에 그리기
+    # 슬롯 및 하트 그리기
+    game_world.draw_slots()
     for transition_box in transition_boxes:
         transition_box.draw()
     update_canvas()

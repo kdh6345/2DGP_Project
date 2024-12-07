@@ -19,7 +19,7 @@ def enter():
     game_world.clear()
 
     # 새로운 객체 생성
-    background = Background('bathroom.png', 800, 445)  # 화장실 배경 이미지
+    background = Background('kitchen.png', 800, 400)  # 화장실 배경 이미지
     girl = Girl()  # 소녀 객체 생성
     game_world.set_girl(girl)
 
@@ -30,9 +30,9 @@ def enter():
     else:
         potion = None  # 이미 습득된 경우 포션을 생성하지 않음
 
-    transition_box = TransitionBox(1600, 200, 100, 100)  # 전환 박스 생성
+    transition_box = TransitionBox(1300, 200, 100, 100)  # 전환 박스 생성
     black_screen = load_image('black.png')  # 검정 화면 배경
-    game_framework.set_room_name("bathroom")
+    game_framework.set_room_name("kitchen")
     stairs=[]
 
     girl.set_y_bounds(210, 250)  # secondroom에서의 y 좌표 제한
@@ -65,10 +65,10 @@ def update():
 
     # 소녀의 위치 확인 및 화면 전환
     if check_for_transition(girl, transition_box):
-        import secondroom_mode
+        import hall1_mode
         # 소녀의 위치 설정 후 모드 전환
-        secondroom_mode.set_girl_position(100, 210)
-        game_framework.change_mode(secondroom_mode)
+        hall1_mode.set_girl_position(100, 210)
+        game_framework.change_mode(hall1_mode)
 
 def draw():
     # 화면 그리기
@@ -76,6 +76,7 @@ def draw():
     black_screen.draw(800, 400, 1600, 800)  # 전체 화면에 검정 배경
     game_world.render()
     game_framework.draw_room_name()
+    # 하트가 수집된 상태라면 화면 특정 위치에 그리기
     # 슬롯 및 하트 그리기
     game_world.draw_slots()
     if potion and not potion.picked_up:  # 포션이 습득되지 않은 경우만 그리기

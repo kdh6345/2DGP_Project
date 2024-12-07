@@ -200,7 +200,7 @@ class Potion:
 
         if self.throwing or not self.picked_up:
             self.image.draw(self.x, self.y, self.width, self.height)
-            print(f"Drawing Potion at ({self.x}, {self.y})")  # 디버깅 출력
+            #print(f"Drawing Potion at ({self.x}, {self.y})")  # 디버깅 출력
 
     def draw_at(self, x, y):
         """소녀가 포션을 들고 있을 때 특정 위치에 그리기"""

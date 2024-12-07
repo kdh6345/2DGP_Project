@@ -2,6 +2,7 @@
 from girl import Girl
 from monster import Monster
 from item import Potion
+from pico2d import *
 
 objects = [[] for _ in range(4)]
 girl = None  # 소녀 객체를 전역으로 관리
@@ -9,14 +10,89 @@ monsters = {}  # 방별로 몬스터를 저장하는 딕셔너리
 monster_positions = {}  # 방별 몬스터 위치 저장
 items = []  # 현재 들고 있는 아이템 관리
 dead_monsters = set()  # 죽은 몬스터 ID 저장
-used_items = set()     # 사용된 아이템 ID 저장
-picked_items=set()
+used_items = {}  # {item_id: True/False} 형태로 사용 상태 관리
+picked_items = {}  # {item_id: True/False} 형태로 픽업 상태 관리
+
 potion_state = None  # 소녀가 들고 있는 포션 상태 저장
 current_mode = None  # 현재 게임 모드(방) 저장
 girl_holding_item = None  # 소녀가 들고 있는 아이템
+slot_image = None
+heart_image = None
+cantgo = False  # 전역 변수로 선언
+hall3open = False  # Hall3의 열림 상태를 관리하는 전역 변수
+def set_cantgo(state):
+    """cantgo 상태를 설정"""
+    global cantgo
+    cantgo = state
 
-cantgo = False  # 전역 상태 변수
-cantgo_start_time = 0  # 메시지 시작 시간
+def is_cantgo():
+    """cantgo 상태를 반환"""
+    global cantgo
+    return cantgo
+
+# 슬롯 상태 초기화 (False는 비어있음, True는 하트가 채워짐)
+slots = [False, False, False]
+
+# 슬롯 위치 초기화 (화면 하단에 3개 배치)
+slot_positions = [(300, 50), (360, 50), (420, 50)]
+
+def init_slot_images():
+    """슬롯 및 하트 이미지를 초기화"""
+    global slot_image, heart_image
+    try:
+        slot_image = load_image('slot.png')  # 슬롯 이미지 로드
+        heart_image = load_image('heart.png')  # 하트 이미지 로드
+    except:
+        print("Error: Failed to load slot.png or heart.png")
+        slot_image = None
+        heart_image = None
+
+def collect_heart():
+    """하트를 수집하여 빈 슬롯에 추가"""
+    for i in range(len(slots)):
+        if not slots[i]:  # 비어있는 슬롯을 찾으면
+            slots[i] = True
+            return True
+    return False  # 슬롯이 모두 차 있으면 아무 일도 하지 않음
+
+def is_slot_filled(index):
+    """슬롯이 채워져 있는지 확인"""
+    if 0 <= index < len(slots):
+        return slots[index]
+    return False
+
+def reset_slots():
+    """슬롯 초기화"""
+    global slots
+    slots = [False, False, False]
+
+def draw_slots():
+    """슬롯과 하트를 화면에 그리기"""
+    global slot_image, heart_image
+
+    if slot_image is None or heart_image is None:
+        init_slot_images()  # 이미지 초기화
+
+    if slot_image is None or heart_image is None:
+        print("Error: Slot or heart image is not loaded.")
+        return
+
+    for i, position in enumerate(slot_positions):
+        x, y = position
+        slot_image.draw(x, y, 50, 50)  # 슬롯 그리기
+        if is_slot_filled(i):  # 슬롯에 하트가 있으면
+            heart_image.draw(x, y, 50, 50)  # 하트 그리기
+
+def set_hall3open(state):
+    """Hall3로 이동 가능 여부를 설정"""
+    global hall3open
+    hall3open = state
+
+def is_hall3open():
+    """Hall3로 이동 가능 여부를 반환"""
+    global hall3open
+    return hall3open
+
 def set_cantgo(state):
     """cantgo 상태를 설정"""
     global cantgo
@@ -74,11 +150,25 @@ def remove_item(item):
 
 def mark_item_used(item_id):
     """아이템을 사용된 상태로 기록"""
-    used_items.add(item_id)
+    used_items[item_id] = True
 
 def is_item_used(item_id):
     """아이템이 사용된 상태인지 확인"""
-    return item_id in used_items
+    return used_items.get(item_id, False)  # 기본값 False
+
+def mark_item_picked(item_id):
+    """아이템을 픽업된 상태로 기록"""
+    picked_items[item_id] = True
+
+def is_item_picked(item_id):
+    """아이템이 픽업된 상태인지 확인"""
+    return picked_items.get(item_id, False)  # 기본값 False
+
+# 상태 초기화 함수 (테스트 또는 초기화 필요 시)
+def reset_item_states():
+    """아이템 상태를 초기화"""
+    used_items.clear()
+    picked_items.clear()
 
 def get_items():
     """현재 들고 있는 아이템 리스트 반환"""
@@ -114,15 +204,18 @@ def set_current_mode(mode_name):
 
 def mark_monster_dead(monster_id):
     """몬스터를 죽은 상태로 기록"""
+    global dead_monsters
+    print(f"[DEBUG] Marking monster {monster_id} as dead.")
     dead_monsters.add(monster_id)
 
 def is_monster_dead(monster_id):
     """몬스터가 죽었는지 확인"""
     return monster_id in dead_monsters
 
+
 def mark_item_used(item_id):
     """아이템을 사용된 상태로 기록"""
-    used_items.add(item_id)
+    used_items[item_id] = True  # `add` 대신 `dict` 방식으로 기록
 
 def is_item_used(item_id):
     """아이템이 사용된 상태인지 확인"""
@@ -179,7 +272,8 @@ def update():
     for stair in objects_at(2):  # 계단은 2번 레이어에 있음
         girl = get_girl()
         if collide(girl, stair):
-            print("Girl collided with a stair")  # 디버깅 로그 추가
+            pass
+           #print("Girl collided with a stair")  # 디버깅 로그 추가
             # 필요한 계단 이동 처리 (예: 소녀의 위치 수정)
 
 

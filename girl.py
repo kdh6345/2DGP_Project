@@ -1,6 +1,6 @@
 #girl.py
 from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_RETURN, SDLK_LEFT, SDLK_RIGHT, SDLK_c, \
-    draw_rectangle
+    draw_rectangle, load_wav, load_music
 
 import gameover_mode
 from item import Key,Potion
@@ -62,6 +62,7 @@ class Idle:
 
         girl.frame = 0
         girl.wait_time = get_time()
+        #girl.stop_walk_sound()
 
     @staticmethod
     def exit(girl, e):
@@ -99,10 +100,14 @@ class Walk:
 
         girl.frame_time_accumulator = 0  # Walk 상태에서 프레임 시간 초기화
 
+        # 걷기 사운드 재생
+        #girl.play_walk_sound()
+
     @staticmethod
     def exit(girl, e):
         girl.dir_x = 0  # 이동 멈춤
         girl.dir_y = 0  # 이동 멈춤
+        #girl.stop_walk_sound()  # 걷기 사운드 멈춤
 
     @staticmethod
     def do(girl):
@@ -139,6 +144,7 @@ class Climb:
 
         girl.dir_x = 0  # Climb 상태에서는 X축 이동 불가
         girl.frame_time_accumulator = 0  # Climb 상태에서 프레임 시간 초기화
+        #girl.play_walk_sound()
 
     @staticmethod
     def exit(girl, e):
@@ -208,6 +214,7 @@ class Run:
         girl.run_duration = 3.0  # 3초 동안 유지
         girl.speed = 3.0  # 빠른 속도
         girl.dir_x = girl.face_dir  # 바라보는 방향으로 이동
+        #girl.play_walk_sound()
 
     @staticmethod
     def exit(girl, e):
@@ -223,7 +230,7 @@ class Run:
             girl.state_machine.add_event(('TIME_OUT', None))
 
         girl.x += girl.dir_x * girl.speed
-        print(f"Running... New position: {girl.x}")
+        #print(f"Running... New position: {girl.x}")
 
         frame_speed = 0.05
         girl.frame_time_accumulator += game_framework.frame_time
@@ -259,6 +266,13 @@ class Girl:
         self.key_image = load_image('key.png')  # 키 이미지 추가
         self.width = 120
         self.height = 120
+        #self.walk_sound = load_music('girl_walk.mp3')  # 사운드 파일 로드
+        #self.run_sound=load_music('girl_run.mp3')
+
+        #self.walk_sound.set_volume(50)  # 볼륨 설정 (0~100)
+        #self.run_sound.set_volume(70)  # 볼륨 설정 (0~100)
+        #self.is_walking_sound_playing = False  # 걷기 사운드 상태 확인
+
 
 
         self.state_machine = StateMachine(self)
@@ -313,6 +327,8 @@ class Girl:
                 time_out: Idle,  # UseItem 상태에서 일정 시간이 지나면 Idle 상태로 전환
             },
         })
+
+
 
     def is_in_state(self, state_name):
         """소녀가 특정 상태에 있는지 확인"""
@@ -378,11 +394,11 @@ class Girl:
 
         elif isinstance(item, Potion):  # 포션 사용
             print("Using Potion!")
-            direction = 1 if self.face_dir == 1 else -1  # 소녀가 바라보는 방향으로 발사
+            direction = 1 if self.face_dir == 1 else -1
             item.fire(self.x + (50 * direction), self.y, direction)  # 소녀의 앞에서 발사
-            game_world.add_object(item, 1)  # 발사된 포션을 게임 월드에 추가
+            game_world.mark_item_used(item.id)  # 포션 사용 상태 기록
+            game_world.mark_item_picked(item.id)  # 포션 픽업 상태 기록
             self.holding_item = None  # 포션 사용 후 손에서 제거
-            game_world.save_girl_holding_item(None)
         else:
             print("Cannot use this item.")
 

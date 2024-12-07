@@ -74,6 +74,9 @@ def draw():
     black_screen.draw(800, 400, 1600, 800)  # 전체 화면에 검정 배경
     game_world.render()
     game_framework.draw_room_name()
+    # 하트가 수집된 상태라면 화면 특정 위치에 그리기
+    # 슬롯 및 하트 그리기
+    game_world.draw_slots()
     fence.draw(800, 140, 1100, 80)
     update_canvas()
     # 소녀의 위치 확인 및 화면 전환

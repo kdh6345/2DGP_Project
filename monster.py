@@ -3,11 +3,12 @@ import random
 import game_world
 import game_framework
 from girl import *
+from Heart import Heart
 
 class Monster:
     id_counter = 0  # 고유 ID를 위한 클래스 변수
 
-    def __init__(self, x, y, girl):
+    def __init__(self, x, y, girl,monster_id):
         self.x = x
         self.y = y
         self.dir_x = random.choice([-1, 1])
@@ -24,6 +25,7 @@ class Monster:
         self.height = 200
         self.detection_rangex = 200
         self.detection_rangey = 100
+        self.monster_id = monster_id or "default_monster"
         self.is_detecting = False
         self.monster_id = Monster.id_counter  # 고유 ID 부여
         Monster.id_counter += 1  # 다음 몬스터를 위해 ID 증가
@@ -136,12 +138,17 @@ class Monster:
 
     def die(self):
         """몬스터가 죽을 때의 동작"""
+        import game_world
         if not self.is_dying:
             self.is_dying = True
             self.dying_time = 0  # 죽는 상태 초기화
             print(f"Monster at ({self.x}, {self.y}) started dying!")
+
+            if game_world.collect_heart():
+                print("Heart added to slot!")
+
             # 포션 사용 상태를 True로 설정
-        import game_world
+        #import game_world
         game_world.mark_item_used(1)  # 포션 ID = 1
         import secondroom_mode
         secondroom_mode.potion_used = True  # secondroom_mode의 potion_used 상태 변경

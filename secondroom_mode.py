@@ -21,17 +21,20 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_boxes, black_screen, stairs, potion, monster
+    global background, girl, transition_boxes, black_screen, stairs, potion, monster,papers
     global secondroom_monster,potion_used
     global font
     font = load_font('ENCR10B.TTF', 24)  # 폰트 로드
 
     # 기존 객체 제거
     game_world.clear()
-
+    #game_world.init_slot_images()  # 슬롯 및 하트 이미지 초기화
     # 새로운 객체 생성
     background = Background('secondroom.png', 800, 400)  # 두 번째 방 배경 이미지
     girl = Girl()  # 소녀 객체 생성
+    papers=Papers(1150,220)
+    game_world.add_object(papers, 2)  # 레이어 2번에 추가
+
     game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(210, 700)  # secondroom에서의 y 좌표 제한
 
@@ -70,7 +73,7 @@ def enter():
 
     # 몬스터 생성
     if secondroom_monster and not game_world.is_item_used(1):  # 포션이 사용되지 않은 경우
-        monster = Monster(300, 260, girl)
+        monster = Monster(800, 275, girl,1)
         game_world.set_monster_for_room('secondroom', monster)
         game_world.add_object(monster, 1)
     else:
@@ -82,6 +85,7 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 3)
+    game_world.add_object(papers, 2)
 
     for stair in stairs:
         game_world.add_object(stair, 2)
@@ -129,9 +133,15 @@ def update():
                 game_framework.change_mode(bathroom_mode)
             elif i == 2:
                 if potion_used:  # 포션을 사용해야만 작동
-                    import hall2_mode
-                    hall2_mode.set_girl_position(100, 250)  # Hall2 초기 위치 설정
-                    game_framework.change_mode(hall2_mode)
+                    if game_world.is_hall3open():
+                        import hall3_mode
+                        hall3_mode.set_girl_position(100, 250)
+                        game_framework.change_mode(hall3_mode)
+                    else:
+                        import hall2_mode
+                        hall2_mode.set_girl_position(100, 250)  # Hall2 초기 위치 설정
+                        game_framework.change_mode(hall2_mode)
+
                 else:
                     if not game_world.is_cantgo():  # 메시지가 표시 중이 아닌 경우
                         game_world.set_cantgo(True)
@@ -143,8 +153,13 @@ def draw():
     global font
     clear_canvas()
     black_screen.draw(800, 400, 1600, 800)
+
     game_world.render()
     game_framework.draw_room_name()
+    # 하트가 수집된 상태라면 화면 특정 위치에 그리기
+    # 슬롯 및 하트 그리기
+    game_world.draw_slots()
+    #papers.draw(1100, 220, 220, 132)
 
     if game_world.is_cantgo():
         elapsed_time = get_time() - game_world.get_cantgo_start_time()
@@ -156,6 +171,7 @@ def draw():
 
     for transition_box in transition_boxes:
         transition_box.draw()
+
     update_canvas()
 
 def handle_events():
@@ -186,3 +202,26 @@ def check_for_transition(entity, transition_box):
 
 def finish():
     pass
+
+class Papers:
+    def __init__(self, x, y, width=220, height=132):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.image = load_image('papers.png')  # 이미지 로드
+
+    def update(self):
+        # 업데이트 로직이 필요하면 여기에 추가 (현재는 정적이므로 비워둠)
+        pass
+
+    def draw(self):
+        self.image.draw(self.x, self.y, self.width, self.height)  # 이미지 그리기
+
+    def get_bb(self):
+        # 히트박스 반환 (필요 없으면 제거 가능)
+        left = self.x - self.width // 2
+        bottom = self.y - self.height // 2
+        right = self.x + self.width // 2
+        top = self.y + self.height // 2
+        return left, bottom, right, top
