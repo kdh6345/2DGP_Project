@@ -24,7 +24,7 @@ def enter():
     game_world.set_girl(girl)
 
     # 포션 상태 확인 및 복원
-    if not game_world.is_item_picked(1):  # 아이템 ID 1인 포션이 습득되지 않았다면 생성
+    if not game_world.is_item_used(1):  # 아이템 ID 1인 포션이 습득되지 않았다면 생성
         potion = Potion(550, 200, 1)  # 포션 생성 (ID = 1)
         game_world.add_object(potion, 1)  # 포션을 게임 월드에 추가
     else:
@@ -44,19 +44,13 @@ def enter():
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
-    #game_world.add_object(potion, 1)  # 포션 추가
+    game_world.add_object(potion, 1)  # 포션 추가
     #game_world.add_object(key, 1)
 
 
 def exit():
-    global background,potion
+    global background
     del background
-
-    # 포션 상태 저장
-    if potion and potion.picked_up:
-        game_world.mark_item_picked(1)  # 포션의 ID를 사용된 상태로 기록
-        potion = None
-
 
 def update():
     # 소녀 및 게임 월드 업데이트

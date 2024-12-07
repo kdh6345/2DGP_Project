@@ -52,13 +52,13 @@ def remove_item(item):
     if item in items:
         items.remove(item)
 
-def mark_item_picked(item_id):
-    """아이템을 습득된 상태로 기록"""
-    picked_items.add(item_id)
+def mark_item_used(item_id):
+    """아이템을 사용된 상태로 기록"""
+    used_items.add(item_id)
 
-def is_item_picked(item_id):
-    """아이템이 습득된 상태인지 확인"""
-    return item_id in picked_items
+def is_item_used(item_id):
+    """아이템이 사용된 상태인지 확인"""
+    return item_id in used_items
 
 def get_items():
     """현재 들고 있는 아이템 리스트 반환"""

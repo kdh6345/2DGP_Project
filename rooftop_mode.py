@@ -41,8 +41,6 @@ def enter():
         Stair(1050, 200, 100, 200, -50, 200)  # 계단 1개
     ]
 
-
-
     # 소녀의 초기 위치 설정
     girl.x, girl.y = girl_position
 

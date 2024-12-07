@@ -68,7 +68,6 @@ def draw():
     black_screen.draw(800, 400, 1600, 800)  # 배경 그리기
     game_world.render()
     transition_box.draw()  # 전환 박스 그리기
-    game_framework.draw_room_name()
     update_canvas()
 
 def handle_events():
