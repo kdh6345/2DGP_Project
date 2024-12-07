@@ -1,7 +1,9 @@
+#rooftop2_mode.py
 from pico2d import *
 import game_framework
 import game_world
 from girl import Girl
+from item import Key
 from stair import Stair
 from background import Background, Fence
 from transition_box import TransitionBox
@@ -23,12 +25,31 @@ def enter():
     girl.set_y_bounds(100, 200)  # rooftop에서의 y 좌표 제한
     girl.set_x_bounds(300, 1600)  # x 좌표 범위 확장
 
+    # 소녀가 들고 있는 아이템 복원
+    holding_item = game_world.load_girl_holding_item()
+    if holding_item:
+        if game_world.is_item_used(holding_item.id):
+            print(f"[DEBUG] Used item detected in girl's hand: {holding_item.id}")
+            girl.set_holding_item(None)  # 들고 있는 아이템 초기화
+            game_world.save_girl_holding_item(None)
+        else:
+            girl.set_holding_item(holding_item)
+
+    # 키 생성 조건
+    if not game_world.is_item_used(0):  # Key ID가 0인지 확인
+        key = Key(300, 150)
+        game_world.add_object(key, 1)
+    else:
+        key = None
+
+
     # 새로운 객체 생성
     background = Background('start room2.png', 800, 400)  # 열린 Jail 배경
     game_framework.set_room_name("Rooftop")
     fence = Fence()
     transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
     black_screen = load_image('black.png')
+
 
     # 계단 리스트 생성
     stairs = [
@@ -67,6 +88,7 @@ def draw():
     clear_canvas()
     black_screen.draw(800, 400, 1600, 800)  # 배경 그리기
     game_world.render()
+    game_framework.draw_room_name()
     transition_box.draw()  # 전환 박스 그리기
     update_canvas()
 

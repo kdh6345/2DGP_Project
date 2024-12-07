@@ -1,3 +1,4 @@
+#girl.py
 from pico2d import get_time, load_image, SDL_KEYDOWN, SDL_KEYUP, SDLK_RETURN, SDLK_LEFT, SDLK_RIGHT, SDLK_c, \
     draw_rectangle
 
@@ -367,31 +368,22 @@ class Girl:
     def use_item_callback(self, item):
         """아이템을 사용할 때의 동작"""
         if isinstance(item, Key):  # 키를 사용했을 경우
-            # 키를 사용하면 상태 제거
-            print("Using Key!")
+            print(f"Using Key with ID: {item.id}")
             self.holding_item = None
+            game_world.mark_item_used(item.id)  # 키 사용 상태 기록
             game_world.remove_item(item)  # `game_world`에서도 제거
+            game_world.save_girl_holding_item(None)  # 소녀의 들고 있는 아이템 초기화
             import rooftop_mode
             rooftop_mode.open_jail = True
 
-        global potion_used
-
-        if isinstance(item, Potion):  # 포션 사용
-
+        elif isinstance(item, Potion):  # 포션 사용
             print("Using Potion!")
-
             direction = 1 if self.face_dir == 1 else -1  # 소녀가 바라보는 방향으로 발사
-
             item.fire(self.x + (50 * direction), self.y, direction)  # 소녀의 앞에서 발사
-
             game_world.add_object(item, 1)  # 발사된 포션을 게임 월드에 추가
-
             self.holding_item = None  # 포션 사용 후 손에서 제거
-
-            potion_used = True  # 포션 사용 상태를 True로 설정
-
+            game_world.save_girl_holding_item(None)
         else:
-
             print("Cannot use this item.")
 
     def set_holding_item(self, item):

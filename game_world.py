@@ -15,6 +15,26 @@ potion_state = None  # 소녀가 들고 있는 포션 상태 저장
 current_mode = None  # 현재 게임 모드(방) 저장
 girl_holding_item = None  # 소녀가 들고 있는 아이템
 
+cantgo = False  # 전역 상태 변수
+cantgo_start_time = 0  # 메시지 시작 시간
+def set_cantgo(state):
+    """cantgo 상태를 설정"""
+    global cantgo
+    cantgo = state
+
+def is_cantgo():
+    """cantgo 상태를 반환"""
+    return cantgo
+
+def set_cantgo_start_time(start_time):
+    """cantgo 메시지 시작 시간을 설정"""
+    global cantgo_start_time
+    cantgo_start_time = start_time
+
+def get_cantgo_start_time():
+    """cantgo 메시지 시작 시간을 반환"""
+    return cantgo_start_time
+
 def save_girl_holding_item(item):
     """소녀가 들고 있는 아이템 상태를 저장"""
     global girl_holding_item
@@ -28,7 +48,7 @@ def load_girl_holding_item():
         if isinstance(girl_holding_item, Potion) and is_item_used(girl_holding_item.id):
             print("[DEBUG] Used potion detected, not restoring.")
             return None  # 사용된 포션은 복원하지 않음
-        print(f"[DEBUG] Loading holding item: {girl_holding_item.__class__.__name__}")
+        #print(f"[DEBUG] Loading holding item: {girl_holding_item.__class__.__name__}")
     else:
         print("[DEBUG] No holding item found.")
     return girl_holding_item

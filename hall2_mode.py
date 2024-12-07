@@ -6,6 +6,8 @@ from girl import Girl
 from background import Background
 from transition_box import TransitionBox
 from stair import Stair
+from item import Potion
+
 from monster import Monster
 
 def set_girl_position(x, y):
@@ -13,7 +15,7 @@ def set_girl_position(x, y):
     girl_position = (x, y)
 
 def enter():
-    global background, girl, transition_boxes, black_screen,stairs
+    global background, girl, transition_boxes, black_screen,stairs,potion
 
     # 기존 객체 제거
     game_world.clear()
@@ -37,6 +39,24 @@ def enter():
     black_screen = load_image('black.png')  # 검정 화면 배경
     game_framework.set_room_name("hall 2")
 
+    # 소녀가 들고 있는 아이템 복원
+    holding_item = game_world.load_girl_holding_item()
+    if holding_item:
+        if game_world.is_item_used(holding_item.id):
+            print(f"[DEBUG] Used item detected in girl's hand: {holding_item.id}")
+            girl.set_holding_item(None)  # 들고 있는 아이템 초기화
+            game_world.save_girl_holding_item(None)
+        else:
+            girl.set_holding_item(holding_item)
+
+
+    # 포션 상태 확인 및 생성
+    if not game_world.is_item_used(2):  # 포션 ID가 사용되지 않은 경우에만 생성
+        potion = Potion(800, 200, 2)  # 포션 생성
+        game_world.add_object(potion, 1)  # 게임 월드에 포션 추가
+    else:
+        potion = None
+
     # 소녀 초기 위치
     girl.x, girl.y = girl_position
 
@@ -50,6 +70,18 @@ def enter():
 def exit():
     global background
     del background
+
+    # 포션이 사용되었는지 확인하고 상태 저장
+    if potion and potion.picked_up:
+        game_world.mark_item_used(potion.id)
+
+        # 소녀가 들고 있는 아이템 상태 저장
+    if girl.holding_item:
+        game_world.save_girl_holding_item(girl.holding_item)
+    else:
+        game_world.save_girl_holding_item(None)
+
+    del potion
 
 
 def update():

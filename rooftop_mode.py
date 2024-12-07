@@ -1,3 +1,4 @@
+#rooftop_mode.py
 from pico2d import *
 import game_framework
 import game_world
@@ -30,9 +31,16 @@ def enter():
 
     # 새로운 객체 생성
     background = Background('start room1.png', 800, 400)  # 닫힌 Jail 배경
-    set_room_name("Rooftop")  # 방 이름과 표시 시간 설정
+    set_room_name("Rooftop", 2.0)  # 방 이름과 표시 시간 설정
     fence = Fence()
-    key = Key(300, 150)  # 키 위치 설정
+
+    # 키 생성 조건 추가
+    if not game_world.is_item_used(0):  # Key ID가 1이라고 가정
+        key = Key(300, 150)  # 키 위치와 ID 설정
+        game_world.add_object(key,1)
+    else:
+        key = None  # 키를 생성하지 않음
+
     transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
     black_screen = load_image('black.png')
 
@@ -40,6 +48,8 @@ def enter():
     stairs = [
         Stair(1050, 200, 100, 200, -50, 200)  # 계단 1개
     ]
+
+
 
     # 소녀의 초기 위치 설정
     girl.x, girl.y = girl_position

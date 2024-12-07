@@ -1,3 +1,4 @@
+#secondroom_mode.py
 from pico2d import *
 import game_framework
 import game_world
@@ -8,6 +9,8 @@ from monster import Monster
 #from obstacle import Obstacle
 from transition_box import TransitionBox
 from stair import Stair
+
+font = None  # 폰트 객체
 
 girl_position = (400, 700)  # 기본 초기 위치
 secondroom_monster = True  # 전역 변수로 몬스터 상태 관리
@@ -20,6 +23,8 @@ def set_girl_position(x, y):
 def enter():
     global background, girl, transition_boxes, black_screen, stairs, potion, monster
     global secondroom_monster,potion_used
+    global font
+    font = load_font('ENCR10B.TTF', 24)  # 폰트 로드
 
     # 기존 객체 제거
     game_world.clear()
@@ -33,13 +38,12 @@ def enter():
     # 소녀가 들고 있는 아이템 복원
     holding_item = game_world.load_girl_holding_item()
     if holding_item:
-        # 사용된 포션은 제거
-        if isinstance(holding_item, Potion) and game_world.is_item_used(holding_item.id):
-            print("[DEBUG] Used potion detected in girl's hand, removing it.")
-            holding_item = None
+        if game_world.is_item_used(holding_item.id):
+            print(f"[DEBUG] Used item detected in girl's hand: {holding_item.id}")
+            girl.set_holding_item(None)  # 들고 있는 아이템 초기화
+            game_world.save_girl_holding_item(None)
         else:
             girl.set_holding_item(holding_item)
-            game_world.add_object(holding_item, 1)  # 아이템을 게임 월드에 추가
 
     # 포션 상태 확인 및 생성
     if not game_world.is_item_used(1):  # 포션 ID가 사용되지 않은 경우에만 생성
@@ -47,6 +51,7 @@ def enter():
         if potion:
             game_world.add_object(potion, 1)
     else:
+
         potion = None
 
     # 전환 박스들 생성
@@ -57,6 +62,7 @@ def enter():
     ]
     black_screen = load_image('black.png')
     game_framework.set_room_name("room 1")
+    game_framework.set_sent_message("you can't enter yet..")
 
     stairs = [
         Stair(850, 400, 100, 500, 200, 850)
@@ -64,7 +70,7 @@ def enter():
 
     # 몬스터 생성
     if secondroom_monster and not game_world.is_item_used(1):  # 포션이 사용되지 않은 경우
-        monster = Monster(800, 260, girl)
+        monster = Monster(300, 260, girl)
         game_world.set_monster_for_room('secondroom', monster)
         game_world.add_object(monster, 1)
     else:
@@ -101,7 +107,7 @@ def update():
     # 게임 월드 업데이트
     game_world.update()
 
-    global secondroom_monster, potion_used
+    global secondroom_monster, potion_used,cantgo,cantgo_start_time
 
     if monster:
         if monster.is_dying and monster.dying_time > 1.0:
@@ -127,14 +133,26 @@ def update():
                     hall2_mode.set_girl_position(100, 250)  # Hall2 초기 위치 설정
                     game_framework.change_mode(hall2_mode)
                 else:
-                    print("You must use the potion to proceed.")
+                    if not game_world.is_cantgo():  # 메시지가 표시 중이 아닌 경우
+                        game_world.set_cantgo(True)
+                        game_world.set_cantgo_start_time(get_time())  # 시작 시간 설정
+
 
 def draw():
     # 화면 그리기
+    global font
     clear_canvas()
     black_screen.draw(800, 400, 1600, 800)
     game_world.render()
     game_framework.draw_room_name()
+
+    if game_world.is_cantgo():
+        elapsed_time = get_time() - game_world.get_cantgo_start_time()
+        if elapsed_time < 3.0:  # 3초 동안 메시지 표시
+            game_framework.draw_sent()
+        else:
+            game_world.set_cantgo(False)  # 3초 후 메시지 상태 초기화
+
 
     for transition_box in transition_boxes:
         transition_box.draw()

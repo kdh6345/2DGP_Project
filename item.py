@@ -60,6 +60,7 @@ class Key:
         self.height = 50
         self.image = load_image('key.png')
         self.picked_up = False
+        self.id = 0  # 고유 ID 추가
 
     def update(self):
         """키 아이템 업데이트 (소녀와의 충돌 확인)"""
@@ -75,7 +76,6 @@ class Key:
 
     def draw_at(self, x, y):
         """소녀가 들고 있을 때의 키 그리기"""
-        print('pickupupupup')
         self.image.draw(x, y, self.width, self.height)
 
     def get_bb(self):

@@ -11,6 +11,12 @@ room_name = None
 font = None  # 폰트 변수 초기화
 room_name_timer = 0
 
+# 메시지 표시 관련 변수
+sent_message = None
+sent_message_timer = 0  # 메시지 표시 시간
+sent_message_duration = 0  # 메시지 지속 시간
+
+
 def set_room_name(name, duration=2.0):
     """방 이름과 표시 시간을 설정"""
     global room_name, room_name_timer
@@ -24,6 +30,24 @@ def draw_room_name():
         if font is None:  # 폰트가 아직 로드되지 않았다면 로드
             font = load_font('ENCR10B.TTF', 40)  # 업로드된 폰트 파일 사용
         font.draw(750, 750, room_name, (255, 255, 255))  # 화면 중앙에 흰색 텍스트로 그리기
+
+def draw_sent():
+    """특정 메시지를 일정 시간 동안 그리기"""
+    global sent_message, sent_message_timer, font
+    if sent_message and sent_message_timer > 0:
+        if font is None:  # 폰트가 아직 로드되지 않았다면 로드
+            font = load_font('ENCR10B.TTF', 20)  # 폰트 크기 조정
+        font.draw(900, 100, sent_message, (255, 0, 0))  # 메시지를 화면에 그리기
+        sent_message_timer -= frame_time  # 표시 시간을 줄임
+        if sent_message_timer <= 0:
+            sent_message = None  # 메시지 초기화
+
+
+def set_sent_message(message, duration=3.0):
+    """특정 메시지를 일정 시간 동안 설정"""
+    global sent_message, sent_message_timer
+    sent_message = message
+    sent_message_timer = duration
 
 def change_mode(mode):
     global stack
