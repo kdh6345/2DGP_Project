@@ -53,6 +53,7 @@ class UseItem:
 class Idle:
     @staticmethod
     def enter(girl, e):
+        girl.current_state_name = 'Idle'
         if start_event(e):
             girl.action = 3
         elif right_down(e) or left_up(e):
@@ -93,6 +94,7 @@ class Idle:
 class Walk:
     @staticmethod
     def enter(girl, e):
+        girl.current_state_name = 'Walk'
         if right_down(e):  # 오른쪽 이동
             girl.dir_x, girl.face_dir = 1, 1
         elif left_down(e):  # 왼쪽 이동
@@ -137,6 +139,7 @@ class Walk:
 class Climb:
     @staticmethod
     def enter(girl, e):
+        girl.current_state_name = 'Climb'
         if up_down(e):  # 위로 이동
             girl.dir_y = 1
         elif down_down(e):  # 아래로 이동
@@ -173,6 +176,7 @@ class Climb:
 class Hide:
     @staticmethod
     def enter(girl, e):
+        girl.current_state_name = 'Hide'
         # 숨는 상태 진입 시, 초기화 작업
         girl.frame = 0
         girl.dir_x = 0
@@ -209,6 +213,7 @@ class Hide:
 class Run:
     @staticmethod
     def enter(girl, e):
+        girl.current_state_name='Run'
         print("Entered Run state")
         girl.frame_time_accumulator = 0
         girl.run_duration = 3.0  # 3초 동안 유지
@@ -266,14 +271,13 @@ class Girl:
         self.key_image = load_image('key.png')  # 키 이미지 추가
         self.width = 120
         self.height = 120
+        self.current_state_name = 'Idle'  # 현재 상태 이름을 추적하는 변수 추가
         #self.walk_sound = load_music('girl_walk.mp3')  # 사운드 파일 로드
         #self.run_sound=load_music('girl_run.mp3')
 
         #self.walk_sound.set_volume(50)  # 볼륨 설정 (0~100)
         #self.run_sound.set_volume(70)  # 볼륨 설정 (0~100)
         #self.is_walking_sound_playing = False  # 걷기 사운드 상태 확인
-
-
 
         self.state_machine = StateMachine(self)
         self.y_min, self.y_max = None, None
@@ -328,7 +332,27 @@ class Girl:
             },
         })
 
+    def is_in_obstacle(self):
+        """소녀가 장애물 안에 있는지 판단"""
+        girl_bb = self.get_bb()
+        for obstacle in game_world.get_obstacles():  # game_world에서 장애물 가져오기
+            if hasattr(obstacle, 'get_bb'):
+                obstacle_bb = obstacle.get_bb()
+                if self.bb_overlap(girl_bb, obstacle_bb):
+                    return True
+        return False
 
+    @staticmethod
+    def bb_overlap(bb1, bb2):
+        """히트박스 겹침 여부 확인"""
+        left1, bottom1, right1, top1 = bb1
+        left2, bottom2, right2, top2 = bb2
+
+        if left1 > right2 or right1 < left2:
+            return False
+        if bottom1 > top2 or top1 < bottom2:
+            return False
+        return True
 
     def is_in_state(self, state_name):
         """소녀가 특정 상태에 있는지 확인"""
@@ -346,6 +370,17 @@ class Girl:
 
     def update(self):
         self.state_machine.update()
+
+        if self.current_state_name == 'Hide':
+            if self.is_in_obstacle():
+                game_world.set_girl_safe(True)
+                print("[DEBUG] Girl is hiding inside an obstacle. Safe!")
+            else:
+                game_world.set_girl_safe(False)
+                print("[DEBUG] Girl is hiding, but not inside an obstacle. Not safe.")
+        else:
+            game_world.set_girl_safe(False)
+
         if self.holding_item:
             self.holding_item.x = self.x + (30 if self.face_dir == 1 else -30)
             self.holding_item.y = self.y
@@ -424,8 +459,8 @@ class Girl:
     def die(self):
         """소녀 사망 처리"""
         print("The girl has died!")
-        import gameover_mode
-        game_framework.change_mode(gameover_mode.gameover_state)  # 객체를 전달
+        import died_mode  # 새로운 사망 모드
+        game_framework.change_mode(died_mode)
 
 
 
