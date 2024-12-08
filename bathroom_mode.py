@@ -19,7 +19,7 @@ def enter():
     game_world.clear()
 
     # 새로운 객체 생성
-    background = Background('bathroom.png', 800, 445)  # 화장실 배경 이미지
+    background = Background('bathroom.png', 800, 440)  # 화장실 배경 이미지
     girl = Girl()  # 소녀 객체 생성
     game_world.set_girl(girl)
 
@@ -36,6 +36,7 @@ def enter():
     stairs=[]
 
     girl.set_y_bounds(210, 250)  # secondroom에서의 y 좌표 제한
+    girl.set_x_bounds(550, 1500)  # secondroom에서의 y 좌표 제한
     #key = Key2(560, 300)  # 키 위치 설정
 
     # 소녀 초기 위치

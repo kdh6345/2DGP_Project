@@ -9,10 +9,12 @@ girl = None  # 소녀 객체를 전역으로 관리
 monsters = {}  # 방별로 몬스터를 저장하는 딕셔너리
 monster_positions = {}  # 방별 몬스터 위치 저장
 items = []  # 현재 들고 있는 아이템 관리
-dead_monsters = set()  # 죽은 몬스터 ID 저장
+dead_monsters = {}  # 죽은 몬스터 ID 저장
 used_items = {}  # {item_id: True/False} 형태로 사용 상태 관리
 picked_items = {}  # {item_id: True/False} 형태로 픽업 상태 관리
+obstacles = []  # 장애물 객체를 저장하는 리스트
 
+girl_safe = False  # 소녀의 안전 상태
 potion_state = None  # 소녀가 들고 있는 포션 상태 저장
 current_mode = None  # 현재 게임 모드(방) 저장
 girl_holding_item = None  # 소녀가 들고 있는 아이템
@@ -20,6 +22,8 @@ slot_image = None
 heart_image = None
 cantgo = False  # 전역 변수로 선언
 hall3open = False  # Hall3의 열림 상태를 관리하는 전역 변수
+kitchen2open=False
+
 def set_cantgo(state):
     """cantgo 상태를 설정"""
     global cantgo
@@ -29,6 +33,15 @@ def is_cantgo():
     """cantgo 상태를 반환"""
     global cantgo
     return cantgo
+
+def set_girl_safe(safe):
+    """소녀의 안전 상태를 설정"""
+    global girl_safe
+    girl_safe = safe
+
+def is_girl_safe():
+    """소녀가 안전한지 반환"""
+    return girl_safe
 
 # 슬롯 상태 초기화 (False는 비어있음, True는 하트가 채워짐)
 slots = [False, False, False]
@@ -60,12 +73,31 @@ def is_slot_filled(index):
     if 0 <= index < len(slots):
         return slots[index]
     return False
+def are_all_slots_filled():
+    """슬롯이 모두 채워졌는지 확인"""
+    return all(slots)  # 모든 슬롯이 True인지 확인
 
 def reset_slots():
     """슬롯 초기화"""
     global slots
     slots = [False, False, False]
 
+def add_obstacle(obstacle):
+    """장애물을 추가"""
+    obstacles.append(obstacle)
+
+def get_obstacles():
+    """현재 등록된 모든 장애물을 반환"""
+    return obstacles
+
+def is_point_in_obstacle(x, y):
+    """주어진 좌표가 장애물 내부에 있는지 확인"""
+    for obstacle in obstacles:
+        if hasattr(obstacle, 'get_bb'):
+            left, bottom, right, top = obstacle.get_bb()
+            if left <= x <= right and bottom <= y <= top:
+                return True
+    return False
 def draw_slots():
     """슬롯과 하트를 화면에 그리기"""
     global slot_image, heart_image
@@ -92,6 +124,17 @@ def is_hall3open():
     """Hall3로 이동 가능 여부를 반환"""
     global hall3open
     return hall3open
+
+def set_kitchen2open(state):
+    """Hall3로 이동 가능 여부를 설정"""
+    global kitchen2open
+    kitchen2open = state
+
+def is_kitchen2open():
+    """Hall3로 이동 가능 여부를 반환"""
+    global kitchen2open
+    return kitchen2open
+
 
 def set_cantgo(state):
     """cantgo 상태를 설정"""
@@ -202,16 +245,16 @@ def set_current_mode(mode_name):
     global current_mode
     current_mode = mode_name
 
-def mark_monster_dead(monster_id):
-    """몬스터를 죽은 상태로 기록"""
-    global dead_monsters
-    print(f"[DEBUG] Marking monster {monster_id} as dead.")
-    dead_monsters.add(monster_id)
+def mark_monster_dead(room_name, monster_id):
+    """특정 방의 몬스터를 죽은 상태로 기록"""
+    if room_name not in dead_monsters:
+        dead_monsters[room_name] = set()
+    dead_monsters[room_name].add(monster_id)
+    print(f"[DEBUG] Marking monster {monster_id} in room '{room_name}' as dead.")
 
-def is_monster_dead(monster_id):
-    """몬스터가 죽었는지 확인"""
-    return monster_id in dead_monsters
-
+def is_monster_dead(room_name, monster_id):
+    """특정 방의 몬스터가 죽었는지 확인"""
+    return room_name in dead_monsters and monster_id in dead_monsters[room_name]
 
 def mark_item_used(item_id):
     """아이템을 사용된 상태로 기록"""
@@ -257,6 +300,11 @@ def save_monster_state(room_name, monster):
     """특정 방의 몬스터 상태 저장"""
     if monster:
         monster_positions[room_name] = (monster.x, monster.y, monster.is_dying)
+        print(f"[DEBUG] Saved monster state for room '{room_name}': {monster_positions[room_name]}")
+
+def load_monster_state(room_name):
+    """특정 방의 몬스터 상태 복원"""
+    return monster_positions.get(room_name)
 
 def set_girl(new_girl):
     global girl

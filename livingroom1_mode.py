@@ -6,6 +6,8 @@ from monster import Monster
 from background import Background
 from stair import Stair
 from transition_box import TransitionBox
+living_monster=True
+potion_used=False
 
 def set_girl_position(x, y):
     global girl_position
@@ -13,6 +15,7 @@ def set_girl_position(x, y):
 
 def enter():
     global background, girl, monster, transition_boxes, black_screen, stairs
+    global living_monster, potion_used
 
     # 기존 객체 제거
     game_world.clear()
@@ -34,6 +37,23 @@ def enter():
 
     # 몬스터 생성 (맵 내 자유롭게 돌아다니도록 설정)
 
+    # 소녀가 들고 있는 아이템 복원
+    holding_item = game_world.load_girl_holding_item()
+    if holding_item:
+        if game_world.is_item_used(holding_item.id):
+            print(f"[DEBUG] Used item detected in girl's hand: {holding_item.id}")
+            girl.set_holding_item(None)  # 들고 있는 아이템 초기화
+            game_world.save_girl_holding_item(None)
+        else:
+            girl.set_holding_item(holding_item)
+
+    # 몬스터 생성 여부 확인
+    if living_monster and not game_world.is_item_used(3):  # 'hall1_monster'가 죽지 않은 경우
+        monster = Monster(800, 250, girl, 3)
+        game_world.set_monster_for_room('hall1', monster)
+        game_world.add_object(monster, 1)
+    else:
+        monster = None
 
     black_screen = load_image('black.png')  # 검정 화면 배경
     game_framework.set_room_name("living room")
@@ -48,9 +68,30 @@ def exit():
     global background
     del background
 
+    if living_monster and monster:
+        game_world.set_monster_position_for_room('living room', (monster.x, monster.y))
+        game_world.remove_monster_for_room('living room')
+        del monster
+
+        # 소녀가 들고 있는 아이템 상태 저장
+    if girl.holding_item:
+        game_world.save_girl_holding_item(girl.holding_item)
+    else:
+        game_world.save_girl_holding_item(None)
+
+
 def update():
+    global monster, living_monster
     # 소녀와 몬스터 업데이트
     game_world.update()
+
+    # 몬스터 상태 확인
+    if monster:
+        if monster.is_dying and monster.dying_time > 1.0:
+            hall1 = True  # 몬스터 제거 후 다시 생성 가능 상태로 설정
+            game_world.remove_object(monster)
+            game_world.remove_monster_for_room('living room')  # 해당 방에서 몬스터 제거
+            print("Monster removed from living room.")
 
     # 소녀의 위치 확인 및 화면 전환
     for i, transition_box in enumerate(transition_boxes):
@@ -60,9 +101,14 @@ def update():
                 hall1_mode.set_girl_position(1500, 200)
                 game_framework.change_mode(hall1_mode)
             elif i == 1:
-                import livingroom2_mode
-                livingroom2_mode.set_girl_position(200, 200)
-                game_framework.change_mode(livingroom2_mode)
+                if game_world.are_all_slots_filled():
+                    import livingroom3_mode
+                    livingroom3_mode.set_girl_position(200, 210)
+                    game_framework.change_mode(livingroom3_mode)
+                else:
+                    import livingroom2_mode
+                    livingroom2_mode.set_girl_position(200, 210)
+                    game_framework.change_mode(livingroom2_mode)
 
 
 def draw():

@@ -23,6 +23,7 @@ def enter():
     fence = load_image('fence2.png')
     game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(100, 210)  # hall3에서의 y 좌표 제한
+    girl.set_x_bounds(100, 1500)  # y 좌표 제한
 
     stairs = [
         Stair(150, 100, 300, 200, -50, 200),  # 첫 번째 계단
@@ -104,6 +105,7 @@ def handle_events():
             game_framework.quit()
         else:
             girl.handle_event(event, stairs)  # stairs 전달
+
 def check_for_transition(girl, transition_box):
     # TransitionBox와 소녀의 히트박스 비교
     girl_left = girl.x - girl.width // 2

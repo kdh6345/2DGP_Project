@@ -4,31 +4,37 @@ import game_world
 from girl import Girl
 from monster import Monster
 from background import Background
+from obstacle import Obstacle
 from stair import Stair
 from transition_box import TransitionBox
 
-hall1_monster = True  # 전역 변수로 몬스터 상태 관리
+hall1_monster = None  # 전역 변수로 몬스터 상태 관리
 potion_used = False  # 포션 사용 여부를 초기화
-
+monster_dead=False
 def set_girl_position(x, y):
     global girl_position
     girl_position = (x, y)
 
 def enter():
     global background, girl, monster, transition_boxes, black_screen, stairs
-    global hall1_monster,potion_used,Desk
+    global hall1_monster,potion_used,Desk,monster_dead
 
     # 기존 객체 제거
     game_world.clear()
-
+    hall1_monster=True
     # 새로운 객체 생성
     background = Background('hall.png', 800, 400)  # 홀 이미지 생성
     girl = Girl()  # 소녀 객체 생성
     game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(200, 700)  # y 좌표 제한
+    girl.set_x_bounds(0, 1600)  # y 좌표 제한
 
     Desk = desk(800, 220)
     game_world.add_object(Desk, 2)  # 레이어 2번에 추가
+
+    obstacle = Obstacle(800, 220, 200, 200)  # x, y, width, height
+    game_world.add_obstacle(obstacle)  # 장애물을 game_world에 등록
+    game_world.add_object(obstacle, 2)  # 레이어 2번에 추가
 
     # 계단과 전환 박스들
     stairs = [
@@ -92,7 +98,7 @@ def exit():
         game_world.save_girl_holding_item(None)
 
 def update():
-    global monster, hall1_monster
+    global monster, hall1_monster,monster_dead
 
     # 게임 월드 업데이트
     game_world.update()
@@ -100,7 +106,8 @@ def update():
     # 몬스터 상태 확인
     if monster:
         if monster.is_dying and monster.dying_time > 1.0:
-            hall1 = True  # 몬스터 제거 후 다시 생성 가능 상태로 설정
+            monster_dead=True
+            hall1_monster = False  # 몬스터 제거 후 다시 생성 가능 상태로 설정
             game_world.remove_object(monster)
             game_world.remove_monster_for_room('hall 1')  # 해당 방에서 몬스터 제거
             print("Monster removed from hall 1.")
@@ -108,10 +115,23 @@ def update():
     # 소녀의 위치 확인 및 화면 전환
     for i, transition_box in enumerate(transition_boxes):
         if check_for_transition(girl, transition_box):
+
             if i == 0:
-                import deskroom_mode
-                deskroom_mode.set_girl_position(1100, 200)
-                game_framework.change_mode(deskroom_mode)
+                if  hall1_monster:
+                    if game_world.is_kitchen2open():
+                        import kitchen2_mode
+                        kitchen2_mode.set_girl_position(1100, 200)
+                        game_framework.change_mode(kitchen2_mode)
+                    else:
+                        import kitchen_mode
+                        kitchen_mode.set_girl_position(1100, 200)
+                        game_framework.change_mode(kitchen_mode)
+                else:
+                    if not game_world.is_cantgo():
+                        game_world.set_cantgo(True)
+                        game_world.set_cantgo_start_time(get_time())
+
+
             elif i == 1:
                 if game_world.is_hall3open():
                     import hall3_mode
@@ -131,9 +151,15 @@ def update():
                     hall2_mode.set_girl_position(1400, 200)
                     game_framework.change_mode(hall2_mode)
             elif i == 3:
-                import livingroom1_mode
-                livingroom1_mode.set_girl_position(200, 200)
-                game_framework.change_mode(livingroom1_mode)
+                if  hall1_monster:
+                    import livingroom1_mode
+                    livingroom1_mode.set_girl_position(200, 200)
+                    game_framework.change_mode(livingroom1_mode)
+                else:
+                    if not game_world.is_cantgo():
+                        game_world.set_cantgo(True)
+                        game_world.set_cantgo_start_time(get_time())
+
 
 def draw():
     # 화면 그리기
@@ -142,6 +168,12 @@ def draw():
     game_world.render()
     game_framework.draw_room_name()
 
+    if game_world.is_cantgo():
+        elapsed_time = get_time() - game_world.get_cantgo_start_time()
+        if elapsed_time < 3.0:  # 3초 동안 메시지 표시
+            game_framework.draw_sent()
+        else:
+            game_world.set_cantgo(False)  # 3초 후 메시지 상태 초기화
     # 슬롯 및 하트 그리기
     game_world.draw_slots()
     for transition_box in transition_boxes:

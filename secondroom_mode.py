@@ -6,6 +6,7 @@ from girl import Girl
 from background import Background
 from item import Potion
 from monster import Monster
+from obstacle import Obstacle
 #from obstacle import Obstacle
 from transition_box import TransitionBox
 from stair import Stair
@@ -15,6 +16,8 @@ font = None  # 폰트 객체
 girl_position = (400, 700)  # 기본 초기 위치
 secondroom_monster = True  # 전역 변수로 몬스터 상태 관리
 potion_used = False  # 포션 사용 여부를 초기화
+monster_walk_sound = load_music('monster_walk.mp3')
+is_monster_walk_sound_playing = False  # 사운드 상태 확인 변수
 
 def set_girl_position(x, y):
     global girl_position
@@ -22,7 +25,8 @@ def set_girl_position(x, y):
 
 def enter():
     global background, girl, transition_boxes, black_screen, stairs, potion, monster,papers
-    global secondroom_monster,potion_used
+    global secondroom_monster,potion_used,obstacle
+    global monster_walk_sound, is_monster_walk_sound_playing
     global font
     font = load_font('ENCR10B.TTF', 24)  # 폰트 로드
 
@@ -34,9 +38,13 @@ def enter():
     girl = Girl()  # 소녀 객체 생성
     papers=Papers(1150,220)
     game_world.add_object(papers, 2)  # 레이어 2번에 추가
+    obstacle = Obstacle(1150, 220, 200, 150)  # x, y, width, height
+    game_world.add_obstacle(obstacle)  # 장애물을 game_world에 등록
+    game_world.add_object(obstacle, 2)  # 레이어 2번에 추가
 
     game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(210, 700)  # secondroom에서의 y 좌표 제한
+    girl.set_x_bounds(0, 1600)  # secondroom에서의 y 좌표 제한
 
     # 소녀가 들고 있는 아이템 복원
     holding_item = game_world.load_girl_holding_item()
@@ -47,6 +55,8 @@ def enter():
             game_world.save_girl_holding_item(None)
         else:
             girl.set_holding_item(holding_item)
+    monster_walk_sound.set_volume(50)
+    is_monster_walk_sound_playing = False  # 초기화
 
     # 포션 상태 확인 및 생성
     if not game_world.is_item_used(1):  # 포션 ID가 사용되지 않은 경우에만 생성
@@ -74,8 +84,10 @@ def enter():
     # 몬스터 생성
     if secondroom_monster and not game_world.is_item_used(1):  # 포션이 사용되지 않은 경우
         monster = Monster(800, 275, girl,1)
+
         game_world.set_monster_for_room('secondroom', monster)
         game_world.add_object(monster, 1)
+        is_monster_walk_sound_playing = True
     else:
         monster = None
 
@@ -92,9 +104,13 @@ def enter():
 
 
 def exit():
-    global background
+    global background, monster_walk_sound, is_monster_walk_sound_playing
     del background
     global monster,potion
+    if monster_walk_sound and is_monster_walk_sound_playing:
+        monster_walk_sound.stop()  # 사운드 정지
+        is_monster_walk_sound_playing = False
+
     if potion and potion.picked_up:  # 포션을 들었다면 사용 상태로 기록
         game_world.mark_item_used(potion.id)
 
@@ -108,16 +124,29 @@ def exit():
             del potion
 
 def update():
+    global secondroom_monster, is_monster_walk_sound_playing
+
     # 게임 월드 업데이트
     game_world.update()
 
-    global secondroom_monster, potion_used,cantgo,cantgo_start_time
+    # 몬스터 걷기 사운드 상태 관리
+    if monster and not monster.is_dying:
+        # 몬스터가 있고 죽는 중이 아니면 사운드 재생
+        if not is_monster_walk_sound_playing:
+            monster_walk_sound.repeat_play()
+            is_monster_walk_sound_playing = True
+    else:
+        # 몬스터가 없거나 죽었으면 사운드 정지
+        if is_monster_walk_sound_playing:
+            monster_walk_sound.stop()
+            is_monster_walk_sound_playing = False
 
-    if monster:
-        if monster.is_dying and monster.dying_time > 1.0:
-            secondroom_monster = True  # 몬스터 제거 후 다시 생성 가능 상태로 설정
+    # 몬스터 제거 로직
+    if monster and monster.is_dying:
+        if monster.dying_time > 1.0:  # 죽은 후 일정 시간이 지나면 제거
             game_world.remove_object(monster)
-            game_world.remove_monster_for_room('secondroom')  # 해당 방에서 몬스터 제거
+            game_world.remove_monster_for_room('secondroom')
+            secondroom_monster = False
             print("Monster removed from secondroom.")
 
     # 소녀의 위치 확인 및 화면 전환
@@ -125,28 +154,26 @@ def update():
         if check_for_transition(girl, transition_box):
             if i == 0:
                 import rooftop2_mode
-                rooftop2_mode.set_girl_position(1050, 210)  # Rooftop 초기 위치 설정
+                rooftop2_mode.set_girl_position(1050, 210)
                 game_framework.change_mode(rooftop2_mode)
             elif i == 1:
                 import bathroom_mode
-                bathroom_mode.set_girl_position(1300, 210)  # Bathroom 초기 위치 설정
+                bathroom_mode.set_girl_position(1300, 210)
                 game_framework.change_mode(bathroom_mode)
             elif i == 2:
-                if potion_used:  # 포션을 사용해야만 작동
+                if potion_used:
                     if game_world.is_hall3open():
                         import hall3_mode
                         hall3_mode.set_girl_position(100, 250)
                         game_framework.change_mode(hall3_mode)
                     else:
                         import hall2_mode
-                        hall2_mode.set_girl_position(100, 250)  # Hall2 초기 위치 설정
+                        hall2_mode.set_girl_position(100, 250)
                         game_framework.change_mode(hall2_mode)
-
                 else:
-                    if not game_world.is_cantgo():  # 메시지가 표시 중이 아닌 경우
+                    if not game_world.is_cantgo():
                         game_world.set_cantgo(True)
-                        game_world.set_cantgo_start_time(get_time())  # 시작 시간 설정
-
+                        game_world.set_cantgo_start_time(get_time())
 
 def draw():
     # 화면 그리기

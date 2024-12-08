@@ -24,6 +24,7 @@ def enter():
     girl = Girl()  # 소녀 객체 생성
     game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(100, 210)  # hall2에서의 y 좌표 제한
+    girl.set_x_bounds(0, 1600)  # hall2에서의 y 좌표 제한
     stairs = [
         Stair(150, 100, 300, 200, -50, 200),  # 계단 1개
         Stair(1450, 100, 300, 200, -50, 200)  # 계단 1개

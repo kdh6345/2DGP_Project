@@ -1,4 +1,3 @@
-#rooftop2_mode.py
 from pico2d import *
 import game_framework
 import game_world
@@ -7,9 +6,12 @@ from item import Key
 from stair import Stair
 from background import Background, Fence
 from transition_box import TransitionBox
+import secondroom_mode  # secondroom_mode 임포트 필요
 
 # 소녀의 초기 위치를 저장하는 변수
 girl_position = (400, 200)
+monster_walk_sound = load_music('monster_walk.mp3')
+is_monster_walk_sound_playing = False  # 사운드 상태 확인 변수
 
 def set_girl_position(x, y):
     global girl_position
@@ -17,13 +19,19 @@ def set_girl_position(x, y):
 
 def enter():
     global girl, background, transition_box, stairs, black_screen, fence
+    global monster_walk_sound, is_monster_walk_sound_playing
 
     # 기존 객체 제거
     game_world.clear()
     girl = Girl()  # 소녀 객체 생성
     game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
     girl.set_y_bounds(100, 200)  # rooftop에서의 y 좌표 제한
-    girl.set_x_bounds(300, 1600)  # x 좌표 범위 확장
+    girl.set_x_bounds(300, 1200)  # x 좌표 범위 확장
+
+    # 몬스터 걷기 사운드 로드
+
+    monster_walk_sound.set_volume(20)
+    is_monster_walk_sound_playing = False  # 초기화
 
     # 소녀가 들고 있는 아이템 복원
     holding_item = game_world.load_girl_holding_item()
@@ -42,14 +50,12 @@ def enter():
     else:
         key = None
 
-
     # 새로운 객체 생성
     background = Background('start room2.png', 800, 400)  # 열린 Jail 배경
     game_framework.set_room_name("Rooftop")
     fence = Fence()
     transition_box = TransitionBox(1050, 100, 100, 10)  # 전환 박스 생성
     black_screen = load_image('black.png')
-
 
     # 계단 리스트 생성
     stairs = [
@@ -60,7 +66,6 @@ def enter():
     girl.x, girl.y = girl_position
 
     # game_world에 객체 추가
-
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
     game_world.add_object(fence, 2)
@@ -68,17 +73,35 @@ def enter():
         game_world.add_object(stair, 2)
 
 def exit():
-    global background
+    global background, monster_walk_sound, is_monster_walk_sound_playing
     del background
+    if monster_walk_sound and is_monster_walk_sound_playing:
+        monster_walk_sound.stop()  # 사운드 정지
+        is_monster_walk_sound_playing = False
 
 def update():
-    global girl
+    global girl, monster_walk_sound, is_monster_walk_sound_playing
 
     # 게임 월드 업데이트
     game_world.update()
+    import secondroom_mode
+    # secondroom_mode의 secondroom_monster 상태 확인
+    if secondroom_mode.secondroom_monster:
+        if not is_monster_walk_sound_playing:  # 사운드가 재생 중이 아니면
+            monster_walk_sound.repeat_play()  # 사운드 반복 재생
+            is_monster_walk_sound_playing = True
+    else:
+        if is_monster_walk_sound_playing:  # 몬스터가 죽었거나 방을 나갔으면 멈춤
+            monster_walk_sound.stop()
+            is_monster_walk_sound_playing = False
 
     # 소녀의 위치 확인 및 화면 전환
     if check_for_transition(girl):
+        # 방을 나갈 때 사운드 정지
+        if monster_walk_sound and is_monster_walk_sound_playing:
+            monster_walk_sound.stop()
+            is_monster_walk_sound_playing = False
+
         girl_position = (1050, 100)
         import secondroom_mode
         secondroom_mode.set_girl_position(850, 600)  # Secondroom에서 소녀의 초기 위치 설정
