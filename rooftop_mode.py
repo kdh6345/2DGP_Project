@@ -99,7 +99,7 @@ def draw():
     clear_canvas()
     black_screen.draw(800, 400, 1600, 800)  # 배경 그리기
     game_world.render()
-    transition_box.draw()  # 전환 박스 그리기
+    #transition_box.draw()  # 전환 박스 그리기
     # 방 이름 그리기
     game_framework.draw_room_name()
     # 슬롯 및 하트 그리기

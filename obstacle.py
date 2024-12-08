@@ -16,7 +16,8 @@ class Obstacle:
         return left, bottom, right, top
 
     def draw(self):
-        draw_rectangle(*self.get_bb())  # 디버깅용 히트박스 표시
+        #draw_rectangle(*self.get_bb())  # 디버깅용 히트박스 표시
+        pass
 
     def update(self):
         pass  # 장애물은 정적이므로 특별한 업데이트 없음

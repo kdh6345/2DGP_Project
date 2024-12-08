@@ -139,8 +139,8 @@ def draw():
     game_world.draw_slots()
 
     # 각 TransitionBox의 히트박스 그리기
-    for transition_box in transition_boxes:
-        transition_box.draw()
+    #for transition_box in transition_boxes:
+    #    transition_box.draw()
     fence.draw(800, 140, 1100, 80)
     update_canvas()
 

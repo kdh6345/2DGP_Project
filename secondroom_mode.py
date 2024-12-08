@@ -69,7 +69,7 @@ def enter():
 
 
     # 몬스터 걷기 사운드 설정
-    monster_walk_sound = load_music('monster_walk.mp3')
+    monster_walk_sound = load_music('monster_walk.wav')
     monster_walk_sound.set_volume(50)
     monster_walk_sound.repeat_play()
     is_monster_walk_sound_playing = True
@@ -216,8 +216,8 @@ def draw():
             game_world.set_cantgo(False)  # 3초 후 메시지 상태 초기화
 
 
-    for transition_box in transition_boxes:
-        transition_box.draw()
+    #for transition_box in transition_boxes:
+    #    transition_box.draw()
 
     update_canvas()
 

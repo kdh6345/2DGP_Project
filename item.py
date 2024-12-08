@@ -29,7 +29,7 @@ class Item:
         """아이템을 화면에 그리기 (습득되지 않은 경우)"""
         if not self.picked_up:
             self.image.draw(self.x, self.y, self.width, self.height)
-            draw_rectangle(*self.get_bb())
+           # draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         """아이템의 히트박스 반환"""

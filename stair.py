@@ -17,7 +17,8 @@ class Stair:
         """
         계단 히트박스 시각화
         """
-        draw_rectangle(*self.get_bb())
+        pass
+        #draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         """

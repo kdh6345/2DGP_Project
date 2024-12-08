@@ -117,7 +117,7 @@ def draw():
     game_world.render()
     game_framework.draw_room_name()
     game_world.draw_slots()  # 슬롯 및 하트 그리기
-    transition_box.draw()  # 전환 박스 그리기
+    #transition_box.draw()  # 전환 박스 그리기
     update_canvas()
 
 

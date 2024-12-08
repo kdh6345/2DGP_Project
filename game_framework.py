@@ -6,7 +6,7 @@ import game_world
 running = True
 stack = []
 frame_time = 0.0  # 프레임 간 경과 시간
-
+background_music = None
 room_name = None
 font = None  # 폰트 변수 초기화
 room_name_timer = 0
@@ -91,7 +91,14 @@ def quit():
     running = False
 
 def run(start_mode):
-    global running, stack, frame_time
+    global running, stack, frame_time, background_music
+
+    # 배경음악 로드 및 재생
+    if background_music is None:
+        background_music = load_music('sound.mp3')
+        background_music.set_volume(50)  # 볼륨 조절 (0~100)
+        background_music.repeat_play()
+
     running = True
     stack = [start_mode]
     start_mode.enter()

@@ -90,7 +90,7 @@ def draw():
     if potion and not potion.picked_up:  # 포션이 습득되지 않은 경우만 그리기
         potion.draw()
     # TransitionBox의 히트박스 그리기
-    transition_box.draw()
+    #transition_box.draw()
     update_canvas()
 
 def handle_events():

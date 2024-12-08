@@ -64,7 +64,7 @@ def enter():
     girl.x, girl.y = girl_position
 
     # 몬스터 걷기 사운드 설정
-    monster_walk_sound = load_music('monster_walk.mp3')
+    monster_walk_sound = load_music('monster_walk.wav')
     monster_walk_sound.set_volume(20)
     is_monster_walk_sound_playing = False  # 초기화
 
@@ -142,8 +142,8 @@ def draw():
     # 하트가 수집된 상태라면 화면 특정 위치에 그리기
     # 슬롯 및 하트 그리기
     game_world.draw_slots()
-    for transition_box in transition_boxes:
-        transition_box.draw()
+    #for transition_box in transition_boxes:
+    #    transition_box.draw()
     update_canvas()
 
 def handle_events():

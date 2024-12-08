@@ -154,7 +154,7 @@ class Monster:
                 )
         else:
             self.current_state.draw(self)
-            draw_rectangle(*self.get_detection_bb())  # 감지 히트박스 시각화
+            #draw_rectangle(*self.get_detection_bb())  # 감지 히트박스 시각화
 
 
 

@@ -19,7 +19,8 @@ class Wall:
         return self.x1, self.y1, self.x2, self.y2
 
     def draw(self):
-        draw_rectangle(self.x1, self.y1, self.x2, self.y2)
+        #draw_rectangle(self.x1, self.y1, self.x2, self.y2)
+        pass
 
     def update(self):
         """
@@ -475,12 +476,12 @@ class Girl:
         self.state_machine.add_event(('INPUT', event))
 
     def draw(self):
-        draw_rectangle(*self.get_bb())  # 소녀의 히트박스를 화면에 표시
+        #draw_rectangle(*self.get_bb())  # 소녀의 히트박스를 화면에 표시
         self.state_machine.draw()
         # 바운더리 표시
         # 디버깅용으로 모든 벽을 표시합니다.
-        for wall in self.walls:
-            wall.draw()
+        #for wall in self.walls:
+            #wall.draw()
 
         if self.holding_item:  # 아이템을 들고 있을 때
             offset_x = 30 if self.face_dir == 1 else -30

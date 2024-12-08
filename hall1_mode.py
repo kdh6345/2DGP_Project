@@ -84,7 +84,7 @@ def enter():
     game_framework.set_room_name("hall 1")
 
     # 몬스터 걷기 사운드 설정
-    monster_walk_sound = load_music('monster_walk.mp3')
+    monster_walk_sound = load_music('monster_walk.wav')
     monster_walk_sound.set_volume(30)
     is_monster_walk_sound_playing = False  # 초기화
 
@@ -212,8 +212,8 @@ def draw():
             game_world.set_cantgo(False)  # 3초 후 메시지 상태 초기화
     # 슬롯 및 하트 그리기
     game_world.draw_slots()
-    for transition_box in transition_boxes:
-        transition_box.draw()
+    #for transition_box in transition_boxes:
+    #    transition_box.draw()
     update_canvas()
 
 def handle_events():

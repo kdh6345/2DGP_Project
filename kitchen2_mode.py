@@ -70,7 +70,7 @@ def draw():
     # 슬롯 및 하트 그리기
     game_world.draw_slots()
     # TransitionBox의 히트박스 그리기
-    transition_box.draw()
+    #transition_box.draw()
     update_canvas()
 
 def handle_events():

@@ -29,7 +29,7 @@ class Fence:
         pass
     def draw(self):
         self.image.draw(410,210,210,170)
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
 
     def get_bb(self):
         return self.x - 120, self.y - 100, self.x + 150, self.y + 100

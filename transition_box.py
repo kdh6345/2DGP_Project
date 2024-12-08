@@ -10,7 +10,8 @@ class TransitionBox:
 
     def draw(self):
         # 히트박스를 시각화
-        draw_rectangle(*self.get_bb())
+        #draw_rectangle(*self.get_bb())
+        pass
 
     def get_bb(self):
         # 히트박스 범위 계산

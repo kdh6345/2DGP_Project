@@ -5,7 +5,7 @@ import rooftop_mode  # 다음 모드로 이동
 class StartScreen:
     def __init__(self):
         self.image = load_image('start_image.png')  # 시작 화면 이미지 로드
-        self.start_bgm = load_music('start_bgm.mp3')  # 시작 화면 BGM
+        self.start_bgm = load_music('sound.mp3')  # 시작 화면 BGM
         self.start_bgm.set_volume(64)
         self.start_bgm.repeat_play()
 
