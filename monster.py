@@ -13,7 +13,7 @@ class Monster:
         self.y = y
         self.dir_x = random.choice([-1, 1])
         self.dir_y = random.choice([-1, 1])
-        self.speed = 0.2
+        self.speed = 0.5
         self.frame = 0
         self.frame_time_accumulator = 0
         self.image = load_image('monster_idle.png')
@@ -46,7 +46,7 @@ class Monster:
             return False
 
         if self.girl.action == 4:
-            print("Girl action is 4 (hiding). Not detecting.")
+            #print("Girl action is 4 (hiding). Not detecting.")
             return False
 
         girl_left, girl_bottom, girl_right, girl_top = self.girl.get_bb()
@@ -86,6 +86,9 @@ class Monster:
     def update(self):
         self.is_detecting = self.is_girl_in_detection()
 
+        # 몬스터와 소녀의 충돌 확인
+        self.check_collision_with_girl()
+
         if self.is_dying:
             self.dying_time += game_framework.frame_time
             if self.dying_time >= 0.5:  # 1초가 경과하면 제거
@@ -106,6 +109,19 @@ class Monster:
 
         # 현재 상태의 행동 수행
         self.current_state.do(self)
+
+    def check_collision_with_girl(self):
+        """소녀와의 충돌 여부 확인"""
+        if game_world.is_girl_safe():  # 소녀가 안전한 상태라면 충돌 무시
+            print("[DEBUG] Girl is safe. Monster won't attack.")
+            return
+
+        girl_bb = self.girl.get_bb()
+        monster_bb = self.get_bb()
+
+        if self.bb_overlap(girl_bb, monster_bb):
+            print("[DEBUG] Monster collided with the girl!")
+            self.girl.die()  # 소녀 사망 처리
 
     def draw(self):
         if self.is_dying:
@@ -128,6 +144,20 @@ class Monster:
         else:
             self.current_state.draw(self)
             draw_rectangle(*self.get_detection_bb())  # 감지 히트박스 시각화
+
+
+
+    @staticmethod
+    def bb_overlap(bb1, bb2):
+        """히트박스 겹침 여부 확인"""
+        left1, bottom1, right1, top1 = bb1
+        left2, bottom2, right2, top2 = bb2
+
+        if left1 > right2 or right1 < left2:
+            return False
+        if bottom1 > top2 or top1 < bottom2:
+            return False
+        return True
 
     def change_state(self, new_state):
         """상태 변경 처리"""
