@@ -1,7 +1,7 @@
 from pico2d import *
 import game_framework
 import game_world
-from girl import Girl
+from girl import Girl, setup_walls
 from background import Background
 from stair import Stair
 from transition_box import TransitionBox
@@ -38,7 +38,16 @@ def enter():
     black_screen = load_image('black.png')  # 검정 화면 배경
     stairs = []  # hall3에서는 계단이 없다면 빈 리스트로 유지
     black_screen = load_image('black.png')  # 검정 화면 배경
-    game_framework.set_room_name("hall 3")
+    game_framework.set_room_name("hall 2")
+    map_walls = [
+
+        (0, 280, 1600, 280),  # 가로벽: y1 == y2
+        (0, 110, 0, 280),  # 가로벽: y1 == y2
+        (1600, 110, 1600, 280),  # 가로벽: y1 == y2
+        (200, 120, 1400, 120)  # 가로벽: y1 == y2
+    ]
+    # 벽 설정
+    setup_walls(map_walls, girl)  # 벽 데이터 추가
 
     # 소녀가 들고 있는 아이템 복원
     holding_item = game_world.load_girl_holding_item()

@@ -22,7 +22,7 @@ def enter():
 
     transition_box = TransitionBox(1300, 200, 100, 100)  # 전환 박스 생성
     black_screen = load_image('black.png')  # 검정 화면 배경
-    game_framework.set_room_name("kitchen2")
+    game_framework.set_room_name("kitchen")
     stairs = []
 
     girl.set_y_bounds(210, 250)  # kitchen2에서의 y 좌표 제한

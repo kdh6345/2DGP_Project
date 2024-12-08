@@ -9,13 +9,16 @@ from transition_box import TransitionBox
 living_monster=True
 potion_used=False
 
+monster_walk_sound = None  # 몬스터 걷기 사운드
+is_monster_walk_sound_playing = False  # 사운드 재생 여부
+
 def set_girl_position(x, y):
     global girl_position
     girl_position = (x, y)
 
 def enter():
     global background, girl, monster, transition_boxes, black_screen, stairs
-    global living_monster, potion_used
+    global living_monster, monster_walk_sound, is_monster_walk_sound_playing
 
     # 기존 객체 제거
     game_world.clear()
@@ -60,13 +63,22 @@ def enter():
     # 소녀 초기 위치
     girl.x, girl.y = girl_position
 
+    # 몬스터 걷기 사운드 설정
+    monster_walk_sound = load_music('monster_walk.mp3')
+    monster_walk_sound.set_volume(20)
+    is_monster_walk_sound_playing = False  # 초기화
+
     # game_world에 객체 추가
     game_world.add_object(background, 0)
     game_world.add_object(girl, 1)
 
 def exit():
-    global background
+    global background, monster_walk_sound, is_monster_walk_sound_playing
     del background
+
+    if monster_walk_sound and is_monster_walk_sound_playing:
+        monster_walk_sound.stop()
+        is_monster_walk_sound_playing = False
 
     if living_monster and monster:
         game_world.set_monster_position_for_room('living room', (monster.x, monster.y))
@@ -81,9 +93,19 @@ def exit():
 
 
 def update():
-    global monster, living_monster
+    global monster, living_monster, monster_walk_sound, is_monster_walk_sound_playing
     # 소녀와 몬스터 업데이트
     game_world.update()
+
+    # 몬스터 걷기 사운드 상태 관리
+    if monster and not monster.is_dying:
+        if not is_monster_walk_sound_playing:  # 사운드가 재생 중이 아니면
+            monster_walk_sound.repeat_play()
+            is_monster_walk_sound_playing = True
+    else:
+        if is_monster_walk_sound_playing:  # 몬스터가 없거나 죽었으면 멈춤
+            monster_walk_sound.stop()
+            is_monster_walk_sound_playing = False
 
     # 몬스터 상태 확인
     if monster:

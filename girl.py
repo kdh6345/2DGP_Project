@@ -10,6 +10,32 @@ import game_framework
 
 can_run = True  # 달리기 상태 해금 여부
 
+class Wall:
+    def __init__(self, x1, y1, x2, y2):
+        self.x1, self.y1 = x1, y1
+        self.x2, self.y2 = x2, y2
+
+    def get_bb(self):
+        return self.x1, self.y1, self.x2, self.y2
+
+    def draw(self):
+        draw_rectangle(self.x1, self.y1, self.x2, self.y2)
+
+    def update(self):
+        """
+        게임 월드에서 호출되는 빈 업데이트 메서드
+        """
+        pass
+
+
+def setup_walls(wall_data, girl):
+    for data in wall_data:
+        x1, y1, x2, y2 = data
+        wall = Wall(x1, y1, x2, y2)
+        girl.add_wall(wall)
+
+
+
 class UseItem:
     """아이템을 사용하는 상태"""
     @staticmethod
@@ -271,13 +297,16 @@ class Girl:
         self.key_image = load_image('key.png')  # 키 이미지 추가
         self.width = 120
         self.height = 120
+        self.boundaries = []  # 여러 바운더리를 저장하는 리스트
         self.current_state_name = 'Idle'  # 현재 상태 이름을 추적하는 변수 추가
+        self.walls = []  # 충돌 가능한 벽 리스트
         #self.walk_sound = load_music('girl_walk.mp3')  # 사운드 파일 로드
         #self.run_sound=load_music('girl_run.mp3')
 
         #self.walk_sound.set_volume(50)  # 볼륨 설정 (0~100)
         #self.run_sound.set_volume(70)  # 볼륨 설정 (0~100)
         #self.is_walking_sound_playing = False  # 걷기 사운드 상태 확인
+
 
         self.state_machine = StateMachine(self)
         self.y_min, self.y_max = None, None
@@ -332,6 +361,13 @@ class Girl:
             },
         })
 
+    def add_wall(self, wall):
+        """
+        소녀가 충돌할 벽을 추가합니다.
+        :param wall: Wall 객체
+        """
+        self.walls.append(wall)
+
     def is_in_obstacle(self):
         """소녀가 장애물 안에 있는지 판단"""
         girl_bb = self.get_bb()
@@ -368,8 +404,46 @@ class Girl:
         self.x_min = x_min
         self.x_max = x_max
 
+    def add_boundary(self, x1, y1, x2, y2):
+        """새로운 바운더리를 추가"""
+        self.boundaries.append((x1, y1, x2, y2))
+        print(f"Added boundary: ({x1}, {y1}, {x2}, {y2})")
+
+    def boundary(self, x1, y1, x2, y2):
+        """소녀가 움직일 수 있는 영역 설정"""
+        self.x_min = x1
+        self.y_min = y1
+        self.x_max = x2
+        self.y_max = y2
+        print(f"Boundary set to: ({x1}, {y1}, {x2}, {y2})")
+
+
     def update(self):
         self.state_machine.update()
+        # 벽과의 충돌 검사 및 위치 제한
+        for wall in self.walls:
+            wx1, wy1, wx2, wy2 = wall.get_bb()
+
+            # x축 충돌 처리
+            if self.x - self.width // 2 < wx2 and self.x + self.width // 2 > wx1:
+                if self.y - self.height // 2 < wy2 and self.y + self.height // 2 > wy1:
+                    # 왼쪽 벽 충돌
+                    if self.x < wx1:
+                        self.x = wx1 - self.width // 2
+                    # 오른쪽 벽 충돌
+                    elif self.x > wx2:
+                        self.x = wx2 + self.width // 2
+
+            # y축 충돌 처리
+            if self.y - self.height // 2 < wy2 and self.y + self.height // 2 > wy1:
+                if self.x - self.width // 2 < wx2 and self.x + self.width // 2 > wx1:
+                    # 아래쪽 벽 충돌
+                    if self.y < wy1:
+                        self.y = wy1 - self.height // 2
+                    # 위쪽 벽 충돌
+                    elif self.y > wy2:
+                        self.y = wy2 + self.height // 2
+
 
         if self.current_state_name == 'Hide':
             if self.is_in_obstacle():
@@ -384,19 +458,16 @@ class Girl:
         if self.holding_item:
             self.holding_item.x = self.x + (30 if self.face_dir == 1 else -30)
             self.holding_item.y = self.y
+            pass
 
-        # y 값 제한 적용
-        if self.y_min is not None and self.y < self.y_min:
-            self.y = self.y_min
-        if self.y_max is not None and self.y > self.y_max:
-            self.y = self.y_max
 
-        # x 값 제한 적용
-        if self.x_min is not None and self.x < self.x_min:
-            self.x = self.x_min
-        if self.x_max is not None and self.x > self.x_max:
-            self.x = self.x_max
-
+    def is_in_boundary(self):
+        """소녀가 현재 어느 바운더리 안에 있는지 확인"""
+        for boundary in self.boundaries:
+            x1, y1, x2, y2 = boundary
+            if x1 <= self.x <= x2 and y1 <= self.y <= y2:
+                return True
+        return False
     def handle_event(self, event, stairs):
         if event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
             self.state_machine.add_event(('SPACE_DOWN', None))  # 스페이스바 이벤트 추가
@@ -406,6 +477,11 @@ class Girl:
     def draw(self):
         draw_rectangle(*self.get_bb())  # 소녀의 히트박스를 화면에 표시
         self.state_machine.draw()
+        # 바운더리 표시
+        # 디버깅용으로 모든 벽을 표시합니다.
+        for wall in self.walls:
+            wall.draw()
+
         if self.holding_item:  # 아이템을 들고 있을 때
             offset_x = 30 if self.face_dir == 1 else -30
             self.holding_item.draw_at(self.x + offset_x, self.y)
@@ -461,6 +537,4 @@ class Girl:
         print("The girl has died!")
         import died_mode  # 새로운 사망 모드
         game_framework.change_mode(died_mode)
-
-
 

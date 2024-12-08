@@ -34,7 +34,7 @@ def enter():
 
     # 포션 상태 확인 및 생성
     if not game_world.is_item_picked(3) and not game_world.is_item_used(3):
-        potion = Potion(400, 200, 3)  # 포션 생성
+        potion = Potion(500, 200, 3)  # 포션 생성
         game_world.add_object(potion, 1)  # 게임 월드에 포션 추가
     else:
         potion = None  # 이미 픽업되었거나 사용된 경우 포션 생성하지 않음

@@ -20,3 +20,4 @@ class Obstacle:
 
     def update(self):
         pass  # 장애물은 정적이므로 특별한 업데이트 없음
+

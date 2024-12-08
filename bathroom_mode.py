@@ -2,7 +2,7 @@
 from pico2d import *
 import game_framework
 import game_world
-from girl import Girl
+from girl import Girl, setup_walls
 from background import Background
 from monster import Monster
 from transition_box import TransitionBox
@@ -34,6 +34,14 @@ def enter():
     black_screen = load_image('black.png')  # 검정 화면 배경
     game_framework.set_room_name("bathroom")
     stairs=[]
+    map_walls = [
+        (500, 150, 1600, 150),  # 가로벽: y1 == y2
+        (500, 280, 1600, 280),  # 가로벽: y1 == y2
+        (500,150,500,280),
+
+    ]
+    # 벽 설정
+    setup_walls(map_walls, girl)  # 벽 데이터 추가
 
     girl.set_y_bounds(210, 250)  # secondroom에서의 y 좌표 제한
     girl.set_x_bounds(550, 1500)  # secondroom에서의 y 좌표 제한

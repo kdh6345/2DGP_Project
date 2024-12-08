@@ -1,8 +1,9 @@
 #secondroom_mode.py
+
 from pico2d import *
 import game_framework
 import game_world
-from girl import Girl
+from girl import Girl, setup_walls
 from background import Background
 from item import Potion
 from monster import Monster
@@ -13,11 +14,12 @@ from stair import Stair
 
 font = None  # 폰트 객체
 
-girl_position = (400, 700)  # 기본 초기 위치
+girl_position = (800, 700)  # 기본 초기 위치
 secondroom_monster = True  # 전역 변수로 몬스터 상태 관리
 potion_used = False  # 포션 사용 여부를 초기화
-monster_walk_sound = load_music('monster_walk.mp3')
+monster_walk_sound = None  # 몬스터 걷기 사운드
 is_monster_walk_sound_playing = False  # 사운드 상태 확인 변수
+
 
 def set_girl_position(x, y):
     global girl_position
@@ -43,8 +45,17 @@ def enter():
     game_world.add_object(obstacle, 2)  # 레이어 2번에 추가
 
     game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
-    girl.set_y_bounds(210, 700)  # secondroom에서의 y 좌표 제한
-    girl.set_x_bounds(0, 1600)  # secondroom에서의 y 좌표 제한
+
+    map_walls = [
+        (750, 300, 750, 800),  # 세로벽: x1 == x2
+        (980, 300, 980, 800),  # 세로벽: x1 == x2
+        (1610, 200, 1610, 300),
+        (0, 280, 780, 280),  # 가로벽: y1 == y2
+        (950, 280, 1600, 280),  # 가로벽: y1 == y2
+        (0, 150, 1600, 150)  # 가로벽: y1 == y2
+    ]
+    # 벽 설정
+    setup_walls(map_walls, girl)  # 벽 데이터 추가
 
     # 소녀가 들고 있는 아이템 복원
     holding_item = game_world.load_girl_holding_item()
@@ -55,9 +66,13 @@ def enter():
             game_world.save_girl_holding_item(None)
         else:
             girl.set_holding_item(holding_item)
-    monster_walk_sound.set_volume(50)
-    is_monster_walk_sound_playing = False  # 초기화
 
+
+    # 몬스터 걷기 사운드 설정
+    monster_walk_sound = load_music('monster_walk.mp3')
+    monster_walk_sound.set_volume(50)
+    monster_walk_sound.repeat_play()
+    is_monster_walk_sound_playing = True
     # 포션 상태 확인 및 생성
     if not game_world.is_item_used(1):  # 포션 ID가 사용되지 않은 경우에만 생성
         potion = game_world.load_potion_state()
@@ -78,7 +93,7 @@ def enter():
     game_framework.set_sent_message("you can't enter yet..")
 
     stairs = [
-        Stair(850, 400, 100, 500, 200, 850)
+        #Stair(850, 400, 100, 500, 200, 850)
     ]
 
     # 몬스터 생성
@@ -107,8 +122,9 @@ def exit():
     global background, monster_walk_sound, is_monster_walk_sound_playing
     del background
     global monster,potion
+    # 몬스터 걷기 사운드 정지
     if monster_walk_sound and is_monster_walk_sound_playing:
-        monster_walk_sound.stop()  # 사운드 정지
+        monster_walk_sound.stop()
         is_monster_walk_sound_playing = False
 
     if potion and potion.picked_up:  # 포션을 들었다면 사용 상태로 기록
@@ -131,10 +147,14 @@ def update():
 
     # 몬스터 걷기 사운드 상태 관리
     if monster and not monster.is_dying:
-        # 몬스터가 있고 죽는 중이 아니면 사운드 재생
-        if not is_monster_walk_sound_playing:
-            monster_walk_sound.repeat_play()
-            is_monster_walk_sound_playing = True
+        if monster.is_moving():  # 몬스터가 움직이는 상태인지 확인
+            if not is_monster_walk_sound_playing:
+                monster_walk_sound.repeat_play()
+                is_monster_walk_sound_playing = True
+        else:
+            if is_monster_walk_sound_playing:
+                monster_walk_sound.stop()
+                is_monster_walk_sound_playing = False
     else:
         # 몬스터가 없거나 죽었으면 사운드 정지
         if is_monster_walk_sound_playing:
@@ -164,11 +184,11 @@ def update():
                 if potion_used:
                     if game_world.is_hall3open():
                         import hall3_mode
-                        hall3_mode.set_girl_position(100, 250)
+                        hall3_mode.set_girl_position(100, 220)
                         game_framework.change_mode(hall3_mode)
                     else:
                         import hall2_mode
-                        hall2_mode.set_girl_position(100, 250)
+                        hall2_mode.set_girl_position(100, 220)
                         game_framework.change_mode(hall2_mode)
                 else:
                     if not game_world.is_cantgo():

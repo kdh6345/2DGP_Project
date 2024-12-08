@@ -25,10 +25,13 @@ class Monster:
         self.height = 200
         self.detection_rangex = 200
         self.detection_rangey = 100
-        self.monster_id = monster_id or "default_monster"
+        self.id = monster_id or "default_monster"
         self.is_detecting = False
         self.monster_id = Monster.id_counter  # 고유 ID 부여
         Monster.id_counter += 1  # 다음 몬스터를 위해 ID 증가
+        self.previous_x = self.x  # 이전 프레임 위치
+        self.is_walking = False  # 초기화: 걷는 상태 아님
+        self.previous_y = self.y  # 이전 프레임 위치
 
         self.dying_time = 0  # 죽는 상태 경과 시간
         self.is_dying = False  # 몬스터가 죽는 중인지 여부
@@ -38,6 +41,13 @@ class Monster:
         self.sniff_cooldown = random.uniform(5, 10)  # 킁킁 상태로 진입 간격 (5~10초 랜덤)
 
         self.current_state = Patrol  # 현재 상태
+
+    def is_moving(self):
+        """몬스터가 움직이고 있는지 확인"""
+        moving = self.x != self.previous_x or self.y != self.previous_y
+        self.previous_x = self.x
+        self.previous_y = self.y
+        return moving
 
     def is_girl_in_detection(self):
         """소녀가 감지 범위 내에 있는지 확인"""
@@ -84,6 +94,7 @@ class Monster:
         return left, bottom, right, top
 
     def update(self):
+
         self.is_detecting = self.is_girl_in_detection()
 
         # 몬스터와 소녀의 충돌 확인

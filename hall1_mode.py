@@ -1,7 +1,7 @@
 from pico2d import *
 import game_framework
 import game_world
-from girl import Girl
+from girl import Girl, setup_walls, Wall
 from monster import Monster
 from background import Background
 from obstacle import Obstacle
@@ -9,20 +9,24 @@ from stair import Stair
 from transition_box import TransitionBox
 
 hall1_monster = None  # 전역 변수로 몬스터 상태 관리
-potion_used = False  # 포션 사용 여부를 초기화
-monster_dead=False
+walls = []  # 생성된 벽을 저장하는 리스트
+monster_walk_sound = None  # 몬스터 걷기 사운드
+is_monster_walk_sound_playing = False  # 사운드 재생 상태
+
 def set_girl_position(x, y):
     global girl_position
     girl_position = (x, y)
 
 def enter():
     global background, girl, monster, transition_boxes, black_screen, stairs
-    global hall1_monster,potion_used,Desk,monster_dead
+    global hall1_monster,potion_used,Desk,monster_walk_sound
 
     # 기존 객체 제거
     game_world.clear()
     hall1_monster=True
     # 새로운 객체 생성
+    walls.clear()  # 벽 리스트 초기화
+
     background = Background('hall.png', 800, 400)  # 홀 이미지 생성
     girl = Girl()  # 소녀 객체 생성
     game_world.set_girl(girl)  # 소녀 객체를 game_world에 설정
@@ -37,16 +41,26 @@ def enter():
     game_world.add_object(obstacle, 2)  # 레이어 2번에 추가
 
     # 계단과 전환 박스들
-    stairs = [
-        Stair(100, 400, 150, 600, -50, 200),
-        Stair(1500, 400, 150, 600, -50, 200)
-    ]
+    stairs = [ ]
     transition_boxes = [
         TransitionBox(0, 200, 20, 100),
         TransitionBox(100, 700, 150, 10),
         TransitionBox(1500, 700, 150, 10),
         TransitionBox(1600, 200, 20, 100)
     ]
+    wall_data  = [
+
+        (230, 280, 1400, 280),  # 가로벽: y1 == y2
+        (50, 0, 50, 800),  # 가로벽: y1 == y2
+        (1550, 0, 1550, 800),  # 가로벽: y1 == y2
+        (0, 110, 1600, 110),  # 가로벽: y1 == y2
+        (200, 280, 200, 800),  # 가로벽: y1 == y2
+        (1450, 280, 1400, 800)  # 가로벽: y1 == y2
+    ]
+    for x1, y1, x2, y2 in wall_data:
+        wall = Wall(x1, y1, x2, y2)
+        walls.append(wall)  # 벽을 리스트에 추가
+        game_world.add_object(wall, 1)
 
     # 소녀가 들고 있는 아이템 복원
     holding_item = game_world.load_girl_holding_item()
@@ -69,6 +83,11 @@ def enter():
     black_screen = load_image('black.png')  # 검정 화면 배경
     game_framework.set_room_name("hall 1")
 
+    # 몬스터 걷기 사운드 설정
+    monster_walk_sound = load_music('monster_walk.mp3')
+    monster_walk_sound.set_volume(30)
+    is_monster_walk_sound_playing = False  # 초기화
+
     # 소녀 초기 위치
     girl.x, girl.y = girl_position
 
@@ -80,7 +99,7 @@ def enter():
         game_world.add_object(stair, 2)
 
 def exit():
-    global background
+    global background, monster_walk_sound, is_monster_walk_sound_playing
     del background
     global monster, potion
     if potion and potion.picked_up:  # 포션을 들었다면 사용 상태로 기록
@@ -91,6 +110,11 @@ def exit():
         game_world.remove_monster_for_room('hall 1')
         del monster
 
+        # 몬스터 걷기 사운드 정지
+    if monster_walk_sound and is_monster_walk_sound_playing:
+        monster_walk_sound.stop()
+        is_monster_walk_sound_playing = False
+
     # 소녀가 들고 있는 아이템 상태 저장
     if girl.holding_item:
         game_world.save_girl_holding_item(girl.holding_item)
@@ -98,19 +122,31 @@ def exit():
         game_world.save_girl_holding_item(None)
 
 def update():
-    global monster, hall1_monster,monster_dead
+    global monster, hall1_monster, walls, monster_walk_sound, is_monster_walk_sound_playing
 
     # 게임 월드 업데이트
     game_world.update()
+    # 몬스터 걷기 사운드 상태 관리
+    if monster and not monster.is_dying:
+        if not is_monster_walk_sound_playing:  # 사운드가 재생 중이 아니면
+            monster_walk_sound.repeat_play()
+            is_monster_walk_sound_playing = True
+    else:
+        if is_monster_walk_sound_playing:  # 몬스터가 없거나 죽었으면 멈춤
+            monster_walk_sound.stop()
+            is_monster_walk_sound_playing = False
 
     # 몬스터 상태 확인
-    if monster:
-        if monster.is_dying and monster.dying_time > 1.0:
-            monster_dead=True
-            hall1_monster = False  # 몬스터 제거 후 다시 생성 가능 상태로 설정
-            game_world.remove_object(monster)
-            game_world.remove_monster_for_room('hall 1')  # 해당 방에서 몬스터 제거
-            print("Monster removed from hall 1.")
+    if monster and monster.is_dying and monster.dying_time > 1.0:
+        hall1_monster = False
+        game_world.remove_object(monster)
+        game_world.remove_monster_for_room('hall1')
+        print("Monster removed from hall 1.")
+
+        # 몬스터가 죽으면 벽 제거
+        for wall in walls:
+            game_world.remove_object(wall)
+        walls.clear()  # 리스트 비우기
 
     # 소녀의 위치 확인 및 화면 전환
     for i, transition_box in enumerate(transition_boxes):

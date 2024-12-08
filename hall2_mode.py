@@ -1,7 +1,7 @@
 from pico2d import *
 import game_framework
 import game_world
-from girl import Girl
+from girl import Girl, setup_walls
 from background import Background
 from transition_box import TransitionBox
 from stair import Stair
@@ -38,6 +38,15 @@ def enter():
     ]
     black_screen = load_image('black.png')  # 검정 화면 배경
     game_framework.set_room_name("hall 2")
+    map_walls = [
+
+        (0, 280, 1600, 280),  # 가로벽: y1 == y2
+        (0, 110, 0, 280),  # 가로벽: y1 == y2
+        (1600, 110, 1600, 280),  # 가로벽: y1 == y2
+        (200, 120, 1400, 120)  # 가로벽: y1 == y2
+    ]
+    # 벽 설정
+    setup_walls(map_walls, girl)  # 벽 데이터 추가
 
     # 소녀가 들고 있는 아이템 복원
     holding_item = game_world.load_girl_holding_item()
@@ -51,7 +60,7 @@ def enter():
 
     # 포션 상태 확인 및 생성
     if not game_world.is_item_picked(2) and not game_world.is_item_used(2):
-        potion = Potion(800, 200, 2)  # 포션 생성
+        potion = Potion(800, 230, 2)  # 포션 생성
         game_world.add_object(potion, 1)  # 게임 월드에 포션 추가
     else:
         potion = None  # 이미 픽업되었거나 사용된 경우 포션 생성하지 않음
