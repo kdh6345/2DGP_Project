@@ -2,7 +2,6 @@ from pico2d import *
 
 class Obstacle:
     def __init__(self, x, y, width, height):
-        """장애물 초기화"""
         self.x = x
         self.y = y
         self.width = width
@@ -16,10 +15,8 @@ class Obstacle:
         top = self.y + self.height // 2
         return left, bottom, right, top
 
-    def update(self):
-        """장애물은 업데이트가 필요 없으므로 빈 메서드로 유지"""
-        pass
-
     def draw(self):
-        """장애물 히트박스 시각화 (디버깅용)"""
-        draw_rectangle(*self.get_bb())
+        draw_rectangle(*self.get_bb())  # 디버깅용 히트박스 표시
+
+    def update(self):
+        pass  # 장애물은 정적이므로 특별한 업데이트 없음
